@@ -1,0 +1,8 @@
+# A few cli to play with:
+
+#build
+docker build  -t 40ansible .
+
+#Run
+docker run -i -t 40ansible /bin/bash
+
