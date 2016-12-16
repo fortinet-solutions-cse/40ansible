@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  strategy: debug
+  tasks:
+  - name: Get status and license validation
+    fortios_repo:
+      action: "status"
+      host: "192.168.40.8"
+      username: "admin"
+  - name: Get status and license validation
+    fortios_repo:
+      action: "status"
+      host: "192.168.40.8"
+      username: "admin"
+       
+      

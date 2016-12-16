@@ -1,0 +1,3 @@
+To try it :
+$ ansible-playbook play.yml
+
