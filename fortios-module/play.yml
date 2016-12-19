@@ -1,6 +1,5 @@
----
 - hosts: localhost
-  strategy: debug
+#  strategy: debug
   tasks:
   - name: Get status and license validation
     fortios_repo:

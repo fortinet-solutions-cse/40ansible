@@ -1,8 +1,14 @@
 # A few cli to play with:
 
-#build
+#build ensure you have downloaded ftntlib-0.4.0.dev13.tgz from https://fndn.fortinet.net
 docker build  -t 40ansible .
 
 #Run
 docker run -i -t 40ansible /bin/bash
 
+#To mount a local directory for playbook dev/test :
+docker run -v /Users/thomas/src/40ansible/:/40ansible -i -t 40ansible /bin/bash
+
+#Debugging API calls on your fortigate:
+diag debug application httpsd 255
+diag debug enable

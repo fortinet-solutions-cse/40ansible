@@ -27,17 +27,23 @@ from ftntlib import FortiOSREST
 import sys
 import json
 import pprint
+fgt = FortiOSREST()
 
+def get( name, action=None, mkey=None, parameters=None):
+    return json.loads(fgt.get('cmdb',name, action, mkey, parameters))
 
-def fortios_status(data):
-
+def login(data):
     host = data['host']
     username = data['username']
-    
-    fgt = FortiOSREST()
     fgt.debug('off')
     fgt.login(host,username,'')
+
+def logout():
+    fgt.logout()
     
+def fortios_status(data):
+
+    login(data)   
     resp = json.loads(fgt.get('cmdb','system', 'interface'))
     fgt.logout()        
 
