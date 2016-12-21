@@ -1,0 +1,17 @@
+- hosts: 192.168.40.8
+  vars:
+    - host: "{{ inventory_hostname }}"
+    - username: "admin"
+    - password: ""
+  tasks:
+    - name: Get status and license validation
+      fortios_status:
+        password: "{{password}}"
+        name: "Status"
+        description: "Get status of the fortigate"
+
+    - name: Delete that repo 
+      github_repo:
+        github_auth_key: "{{github_token}}"
+        name: "Hello-World"
+        state: absent
