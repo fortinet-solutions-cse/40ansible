@@ -1,17 +1,15 @@
-1. Make sure setuptools is installed
+# A few cli to play with:
 
-Ubuntu: sudo apt install python-setuptools
 
-2. Make sure you're running a Python version greater than 2.6
+#Docekr test/dev 
+docker build  -t 40ansible .
 
-$ python -V
-Python 2.7.0
+#Run
+docker run -i -t 40ansible /bin/bash
 
-2. To install with Python 2.x:
+#To mount a local directory for playbook dev/test :
+docker run -v /Users/thomas/src/40ansible/:/40ansible -i -t 40ansible /bin/bash
 
-  $ sudo python setup.py install
-
-3. To install with Python 3.x:
-
-  $ sudo python3 setup.py install
-
+#Debugging API calls on your fortigate:
+diag debug application httpsd 255
+diag debug enable

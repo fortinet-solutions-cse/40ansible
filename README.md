@@ -1,2 +1,4 @@
-# fortigateconf
-Python library to interact with configuration of fortigate (REST API)
+# 40ansible
+Docker files for Ansible development of Fortigate modules
+
+Now using fortigateconf but sure to pip install fortigateconf 
