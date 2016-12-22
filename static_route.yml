@@ -1,10 +1,16 @@
 - hosts: localhost
-#ansible 2.1 #  strategy: debug
+  strategy: debug
   tasks:
   - name: Set static route on the fortigate
     fortios_router_static:
-      action: "status"
+      action: "set"
       host: "192.168.40.8"
       username: "admin"
       password: ""
-      
+      vdom: "root"
+      config:
+       seq-num: "8"
+       dst: "10.10.32.0 255.255.255.0"
+       device: "port2"
+       gateway: "192.168.40.252"
+ 

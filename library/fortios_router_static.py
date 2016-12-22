@@ -67,6 +67,20 @@ def fortios_status(data):
     meta = {"status": resp['status'], 'response': resp['version']}
     return False, False, meta
 
+def fortios_router_static_set(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    fgt.debug('off')
+    fgt.login(host,username,password)
+
+    resp = json.loads(fgt.set('router', 'static', vdom=data['vdom'], data=data['config']))
+    fgt.logout()        
+
+    # default: something went wrong
+    meta = {"status": resp['status'], 'response': resp['version']}
+    return False, False, meta
+
 
 def fortios_webfilter(data):
  
@@ -84,16 +98,18 @@ def main():
         "password": {"required": False, "type": "str"},
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
+        "vdom": {"required": False, "type": "str", "default":"root"},
         "action": {
-            "default": "status",
-            "choices": ['status', 'webfilter'],
+            "default": "set",
+            "choices": ['set', 'delete'],
             "type": 'str'
         },
+        "config": {"required": False, "type": "dict"},
     }
 
     choice_map = {
-        "status": fortios_status,
-        "webfilter": fortios_webfilter,
+        "set": fortios_router_static_set,
+        "delete": fortios_webfilter,
     }
 
     module = AnsibleModule(argument_spec=fields)

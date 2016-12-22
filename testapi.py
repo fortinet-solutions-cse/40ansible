@@ -15,7 +15,7 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 logger.debug('often makes a very good meal of %s', 'visiting tourists')
 
@@ -41,15 +41,10 @@ def main():
     resp = fgt.schema('router','static')
     pp.pprint(resp)
     
-    resp = fgt.post('router','static', vdom="root", data=data)
+    resp = fgt.set('router','static', vdom="root", data=data)
     r = json2obj(resp)
     pp.pprint(r)
-    if r.http_status == 424:
-        mkey = data['seq-num']
-        resp = fgt.put('router','static', mkey=mkey, data=data)
-        pp.pprint(json.loads(resp))
 
-    pp.pprint(json.loads(resp))
    
     # Sample API calls
     #fgt.get_v1('monitor', 'firewall', 'policy')
