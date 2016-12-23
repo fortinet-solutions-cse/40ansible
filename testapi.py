@@ -43,29 +43,6 @@ def main():
     
     pp.pprint(resp['reason'])
 
-   
-    # Sample API calls
-    #fgt.get_v1('monitor', 'firewall', 'policy')
-    #fgt.get_v1('cmdb', 'firewall', 'address')
-    #resp = fgt.get('monitor', 'firewall', 'policy')
-    #jresp = json.loads(resp)
-    #pp.pprint(jresp)
-    #print "STATUS:"+jresp["status"]
-
-#    fgt.get('monitor', 'firewall', 'session')
-#    fgt.get('monitor', 'firewall', 'session', parameters={'ip_version':'ipv4',
-#                                                          'count':2})
-
-    #fgt.get('monitor', 'fortiview', 'statistics')
-#    fgt.get('monitor', 'fortiview', 'statistics', parameters={'realime':True})
-#    fgt.get('monitor', 'fortiview', 'statistics', parameters={'realime':False})
-
-
-#                                                              'before':2})
-#    fgt.delete('cmdb', 'firewall', 'policy', mkey=1)
-#    fgt.delete('cmdb', 'firewall', 'policy')
-
-    # Always logout after session is done
     fgt.logout()
 
 

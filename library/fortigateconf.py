@@ -27,18 +27,39 @@ short_description: Module to configure all aspects of fortigate products using t
 '''
 
 EXAMPLES = '''
-- name: Set a static route on a FortiGate
-  fortigateconfig:
-   password: "{{password}}"
-   name: "Status"
-   description: "Get status of the fortigate"
-  register: result
-- name: Delete that repo 
-  github_repo:
-    github_auth_key: "..."
-    name: "Hello-World"
-    state: absent
-  register: result
+- hosts: localhost
+  strategy: debug
+  vars:
+   host: "192.168.40.8"
+   username: "admin"
+   password: ""
+   vdom: "root"
+  tasks:
+  - name: Set static route on the fortigate
+    fortigateconf:
+     action: "set"
+     host:  "{{  host }}"  
+     username: "{{  username}}"  
+     password: "{{ password }}"  
+     vdom:  "{{  vdom }}"  
+     config: "router static"
+     config_parameters:
+       seq-num: "8"
+       dst: "10.10.32.0 255.255.255.0"
+       device: "port2"
+       gateway: "192.168.40.252"
+  - name: Delete firewall address 
+    fortigateconf:
+     config: "firewall address"
+     action: "delete"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"  
+     vdom:  "{{  vdom }}"
+     config_parameters:
+       wildcard-fqdn: "*.test.ansible.com"
+       name: "test-ansible"
+       type: "wildcard-fqdn"
 '''
 
 from ansible.module_utils.basic import *
@@ -458,17 +479,24 @@ def fortigate_config_del(data):
     host = data['host']
     username = data['username']
     password = data['password']
+    vdom=data['vdom']
     fgt.login(host,username,password)
 
     functions = data['config'].split()
-    mkey = data['config_parameters']['seq-num']
-    resp = fgt.delete(functions[0], functions[1], vdom=data['vdom'], mkey=int(mkey), data=data['config_parameters'])
+    schema = fgt.schema(functions[0], functions[1])
+    keyname = schema['mkey']
+    dataconf = data['config_parameters']
+    mkey = dataconf[keyname]
+    resp = fgt.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
     fgt.logout()    
     meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
     if resp['status'] == "success":
         return False, True, meta
     else:
-        return True, False, meta
+        if resp['reason'] == "Not Found":
+            return False, False, meta
+        else:
+            return True, False, meta
 
         
 def main():

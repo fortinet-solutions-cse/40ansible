@@ -1,17 +1,34 @@
-- hosts: 192.168.40.8
+- hosts: localhost
+  strategy: debug
   vars:
-    - host: "{{ inventory_hostname }}"
-    - username: "admin"
-    - password: ""
+   host: "192.168.40.8"
+   username: "admin"
+   password: ""
+   vdom: "root"
   tasks:
-    - name: Get status and license validation
-      fortios_status:
-        password: "{{password}}"
-        name: "Status"
-        description: "Get status of the fortigate"
+  - name: Set static route on the fortigate
+    fortigateconf:
+     action: "set"
+     host:  "{{  host }}"  
+     username: "{{  username}}"  
+     password: "{{ password }}"  
+     vdom:  "{{  vdom }}"  
+     config: "router static"
+     config_parameters:
+       seq-num: "8"
+       dst: "10.10.32.0 255.255.255.0"
+       device: "port2"
+       gateway: "192.168.40.252"
+  - name: Delete firewall address 
+    fortigateconf:
+     config: "firewall address"
+     action: "delete"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"  
+     vdom:  "{{  vdom }}"
+     config_parameters:
+       wildcard-fqdn: "*.test.ansible.com"
+       name: "test-ansible"
+       type: "wildcard-fqdn"
 
-    - name: Delete that repo 
-      github_repo:
-        github_auth_key: "{{github_token}}"
-        name: "Hello-World"
-        state: absent
