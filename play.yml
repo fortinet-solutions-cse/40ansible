@@ -40,6 +40,17 @@
      password: "{{ password }}"  
      vdom:  "{{  vdom }}"
      config_parameters:
-       wildcard-fqdn: "*.libertyglobal.com"
-       name: "lb-ansible"
-       type: "wildcard-fqdn"
+        policyid: "66"
+        name: "ansible"
+        json:
+          policyid: "66"
+          name: "ansible"
+          action: "accept"
+          srcintf: [ {"name": "port1"} ] 
+          dstintf: [{"name":"port2"} ] 
+          srcaddr: [{"name":"all"} ] 
+          dstaddr: [{"name":"all"}] 
+          schedule: "always" 
+          service:  [{"name":"HTTPS"}] 
+          logtraffic: "all" 
+ 
