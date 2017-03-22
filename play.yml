@@ -1,7 +1,7 @@
 - hosts: localhost
   strategy: debug
   vars:
-   host: "192.168.40.8"
+   host: "192.168.115.128"
    username: "admin"
    password: ""
    vdom: "root"
@@ -19,16 +19,27 @@
        dst: "10.10.32.0 255.255.255.0"
        device: "port2"
        gateway: "192.168.40.252"
-  - name: Delete firewall address 
+  - name: add firewall address 
     fortigateconf:
      config: "firewall address"
-     action: "delete"
+     action: "set"
      host:  "{{ host }}"  
      username: "{{ username }}"  
      password: "{{ password }}"  
      vdom:  "{{  vdom }}"
      config_parameters:
-       wildcard-fqdn: "*.test.ansible.com"
-       name: "test-ansible"
+       wildcard-fqdn: "*.libertyglobal.com"
+       name: "lb-ansible"
        type: "wildcard-fqdn"
-
+  - name: add  firewall policy
+    fortigateconf:
+     config: "firewall policy"
+     action: "set"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"  
+     vdom:  "{{  vdom }}"
+     config_parameters:
+       wildcard-fqdn: "*.libertyglobal.com"
+       name: "lb-ansible"
+       type: "wildcard-fqdn"

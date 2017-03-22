@@ -26,7 +26,7 @@ def json2obj(data):
 def main():
     # Login to the FGT ip
     fgt.debug('on')
-    fgt.login('192.168.40.8','admin','')
+    fgt.login('192.168.115.128','admin','')
     data = {
   #         "action" : "add",
            "seq-num" :"8",
