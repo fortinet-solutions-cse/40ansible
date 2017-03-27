@@ -1,5 +1,5 @@
 - hosts: localhost
-  strategy: debug
+#  strategy: debug
   vars:
    host: "192.168.115.128"
    username: "admin"
