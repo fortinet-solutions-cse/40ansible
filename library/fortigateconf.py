@@ -458,6 +458,41 @@ def fortios_status(data):
     meta = {"status": resp['status'], 'response': resp['version']}
     return False, False, meta
 
+def fortigate_config_put(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    fgt.login(host,username,password)
+
+    functions = data['config'].split()
+    
+    resp = fgt.put(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
+    fgt.logout()    
+
+    meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
+    if resp['status'] == "success":
+        return False, True, meta
+    else:
+        return True, False, meta
+
+
+def fortigate_config_post(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    fgt.login(host,username,password)
+
+    functions = data['config'].split()
+    
+    resp = fgt.post(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
+    fgt.logout()    
+
+    meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
+    if resp['status'] == "success":
+        return False, True, meta
+    else:
+        return True, False, meta
+
 def fortigate_config_set(data):
     host = data['host']
     username = data['username']
@@ -510,7 +545,7 @@ def main():
         "config": {"required": True,"choices":AVAILABLE_CONF , "type": "str"},
         "action": {
             "default": "set",
-            "choices": ['set', 'delete'],
+            "choices": ['set', 'delete','put','post'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
@@ -519,6 +554,8 @@ def main():
     choice_map = {
         "set": fortigate_config_set,
         "delete": fortigate_config_del,
+        "put": fortigate_config_put,
+        "post": fortigate_config_post,
     }
 
     module = AnsibleModule(argument_spec=fields)
