@@ -3,11 +3,13 @@
   vars:
    host: "192.168.115.128"
    username: "admin"
-   password: ""
+   password: "adminpasswd"
    vdom: "root"
   tasks:
+  - name: Upload python module wrkaround when pip is not an option.
+    copy: src=library/fortiosapi.py dest=/usr/local/lib/python2.7/dist-packages/fortiosapi.py
   - name: Set static route on the fortigate
-    fortigateconf:
+    fortiosconfig:
      action: "set"
      host:  "{{  host }}"  
      username: "{{  username}}"  
@@ -20,7 +22,7 @@
        device: "port2"
        gateway: "192.168.40.252"
   - name: add firewall address 
-    fortigateconf:
+    fortiosconfig:
      config: "firewall address"
      action: "set"
      host:  "{{ host }}"  
@@ -32,7 +34,7 @@
        name: "lb-ansible"
        type: "wildcard-fqdn"
   - name: add  firewall policy
-    fortigateconf:
+    fortiosconfig:
      config: "firewall policy"
      action: "set"
      host:  "{{ host }}"  
@@ -52,5 +54,15 @@
           dstaddr: [{"name":"all"}] 
           schedule: "always" 
           service:  [{"name":"HTTPS"}] 
-          logtraffic: "all" 
- 
+          logtraffic: "all"  
+  - name: fortimanager management settings
+    fortiosconfig:
+     config: "system central-management"
+     action: "put"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"
+     vdom: "global"
+     config_parameters:
+        "type": "fortimanager"
+        fmg: "10.210.67.18"

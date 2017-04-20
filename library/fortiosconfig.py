@@ -22,8 +22,8 @@
 
 DOCUMENTATION = '''
 ---
-module: fortigateconfig
-short_description: Module to configure all aspects of fortigate products using the REST API
+module: fortiosconfig
+short_description: Module to configure all aspects of fortinet products using the REST API
 '''
 
 EXAMPLES = '''
@@ -36,7 +36,7 @@ EXAMPLES = '''
    vdom: "root"
   tasks:
   - name: Set static route on the fortigate
-    fortigateconf:
+    fortiosconfig:
      action: "set"
      host:  "{{  host }}"  
      username: "{{  username}}"  
@@ -49,7 +49,7 @@ EXAMPLES = '''
        device: "port2"
        gateway: "192.168.40.252"
   - name: Delete firewall address 
-    fortigateconf:
+    fortiosconfig:
      config: "firewall address"
      action: "delete"
      host:  "{{ host }}"  
@@ -61,21 +61,20 @@ EXAMPLES = '''
        name: "test-ansible"
        type: "wildcard-fqdn"
 '''
-
 from ansible.module_utils.basic import *
 import requests
-from fortigateconf import FortiOSConf
+from fortiosapi import FortiOSAPI
 import sys
 import json
 import pprint
 from argparse import Namespace
 import logging
 
-fgt = FortiOSConf()
+fos = FortiOSAPI()
 formatter = logging.Formatter(
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 logger = logging.getLogger('fortinetconflib')
-hdlr = logging.FileHandler('/var/tmp/ansible-fortigateconf.log')
+hdlr = logging.FileHandler('/var/tmp/ansible-fortiosconfig.log')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.DEBUG)
@@ -437,22 +436,22 @@ def json2obj(data):
     return json.loads(data, object_hook=lambda d: Namespace(**d))
 
 def get( name, action=None, mkey=None, parameters=None):
-    return json.loads(fgt.get('cmdb',name, action, mkey, parameters))
+    return json.loads(fos.get('cmdb',name, action, mkey, parameters))
 
 def login(data):
     host = data['host']
     username = data['username']
-    fgt.debug('off')
-    fgt.login(host,username,'')
+    fos.debug('off')
+    fos.login(host,username,'')
 
 def logout():
-    fgt.logout()
+    fos.logout()
     
 def fortios_status(data):
 
     login(data)   
-    resp = json.loads(fgt.get('system', 'interface'))
-    fgt.logout()        
+    resp = json.loads(fos.get('system', 'interface'))
+    fos.logout()        
 
     # default: something went wrong
     meta = {"status": resp['status'], 'response': resp['version']}
@@ -462,12 +461,12 @@ def fortigate_config_put(data):
     host = data['host']
     username = data['username']
     password = data['password']
-    fgt.login(host,username,password)
+    fos.login(host,username,password)
 
     functions = data['config'].split()
     
-    resp = fgt.put(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
-    fgt.logout()    
+    resp = fos.put(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
+    fos.logout()    
 
     meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
     if resp['status'] == "success":
@@ -480,12 +479,12 @@ def fortigate_config_post(data):
     host = data['host']
     username = data['username']
     password = data['password']
-    fgt.login(host,username,password)
+    fos.login(host,username,password)
 
     functions = data['config'].split()
     
-    resp = fgt.post(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
-    fgt.logout()    
+    resp = fos.post(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
+    fos.logout()    
 
     meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
     if resp['status'] == "success":
@@ -497,12 +496,12 @@ def fortigate_config_set(data):
     host = data['host']
     username = data['username']
     password = data['password']
-    fgt.login(host,username,password)
+    fos.login(host,username,password)
 
     functions = data['config'].split()
     
-    resp = fgt.set(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
-    fgt.logout()    
+    resp = fos.set(functions[0], functions[1], vdom=data['vdom'], data=data['config_parameters'])
+    fos.logout()    
 
     meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
     if resp['status'] == "success":
@@ -515,15 +514,15 @@ def fortigate_config_del(data):
     username = data['username']
     password = data['password']
     vdom=data['vdom']
-    fgt.login(host,username,password)
+    fos.login(host,username,password)
 
     functions = data['config'].split()
-    schema = fgt.schema(functions[0], functions[1])
+    schema = fos.schema(functions[0], functions[1])
     keyname = schema['mkey']
     dataconf = data['config_parameters']
     mkey = dataconf[keyname]
-    resp = fgt.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
-    fgt.logout()    
+    resp = fos.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
+    fos.logout()    
     meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
     if resp['status'] == "success":
         return False, True, meta
