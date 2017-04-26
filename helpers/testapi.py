@@ -26,22 +26,18 @@ def json2obj(data):
 def main():
     # Login to the FGT ip
     fgt.debug('on')
-    fgt.login('192.168.115.128','admin','')
+    fgt.login('192.168.115.128','admin','adminpasswd')
     data = {
-  #         "action" : "add",
-           "seq-num" :"8",
-           "dst": "10.10.30.0 255.255.255.0",
-           "device": "port2",
-           "gateway": "192.168.40.254",
-        }
+             "name": "port1",
+             "allowaccess": "ping https ssh http fgfm snmp",
+            "vdom":"root"
+         }
     pp = pprint.PrettyPrinter(indent=4)
     d=json2obj(json.dumps(data))
-    resp = fgt.get('router','static', vdom="root", mkey=8)
+    
+    resp = fgt.set('system','interface', vdom="root", data=data)
+    
     pp.pprint(resp)
-    
-    resp = fgt.delete('router','static', vdom="root", data=data)
-    
-    pp.pprint(resp['reason'])
 
     fgt.logout()
 
