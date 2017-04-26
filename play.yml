@@ -6,8 +6,8 @@
    password: "adminpasswd"
    vdom: "root"
   tasks:
-  - name: Upload python module wrkaround when pip is not an option.
-    copy: src=library/fortiosapi.py dest=/usr/local/lib/python2.7/dist-packages/fortiosapi.py
+#  - name: Upload python module wrkaround when pip is not an option.
+#    copy: src=library/fortiosapi.py dest=/usr/local/lib/python2.7/dist-packages/fortiosapi.py
   - name: Set static route on the fortigate
     fortiosconfig:
      action: "set"
