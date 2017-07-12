@@ -73,7 +73,7 @@ import logging
 fos = FortiOSAPI()
 formatter = logging.Formatter(
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-logger = logging.getLogger('fortinetconflib')
+logger = logging.getLogger('fortiosapi')
 hdlr = logging.FileHandler('/var/tmp/ansible-fortiosconfig.log')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
