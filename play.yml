@@ -10,7 +10,7 @@
 # here to ensure update/downgrade if needed (optional)
   - pip: 
      name: fortiosapi
-     version: 0.6.2
+     version: 0.7.2
   - name: Set static route on the fortigate
     fortiosconfig:
      action: "set"
@@ -42,7 +42,7 @@
   - name:   firewall policy
     fortiosconfig:
      config: "firewall policy"
-     action: "post"
+     action: "set"
      host:  "{{ host }}"  
      username: "{{ username }}"  
      password: "{{ password }}"  
@@ -72,3 +72,21 @@
      config_parameters:
         "type": "fortimanager"
         fmg: "10.210.67.18"
+  - name: system resource
+    fortiosconfig:
+     config: "system resource"
+     action: "monitor"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"
+     vdom: "global"
+  - name: Get information 
+    fortiosconfig:
+     config: "system global"
+     action: "get"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"
+     vdom: "global"
+     config_parameters:
+       name: "global"
