@@ -458,16 +458,6 @@ def logout():
     fos.logout()
 
 
-def fortios_status(data):
-    login(data)
-    resp = json.loads(fos.get('system', 'interface'))
-    fos.logout()
-
-    # default: something went wrong
-    meta = {"status": resp['status'], 'response': resp['version']}
-    return False, False, meta
-
-
 def fortigate_config_put(data):
     host = data['host']
     username = data['username']
@@ -490,8 +480,7 @@ def fortigate_config_put(data):
 
     fos.logout()
 
-    meta = {"status": resp['status'], 'reason': resp['reason'],
-            'version': resp['version'], }
+    meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
         return False, True, meta
     else:
@@ -510,8 +499,7 @@ def fortigate_config_post(data):
                     data=data['config_parameters'])
     fos.logout()
 
-    meta = {"status": resp['status'], 'reason': resp['reason'],
-            'version': resp['version'], }
+    meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
         return False, True, meta
     else:
@@ -530,8 +518,7 @@ def fortigate_config_set(data):
                    data=data['config_parameters'])
     fos.logout()
 
-    meta = {"status": resp['status'], 'reason': resp['reason'],
-            'version': resp['version'], }
+    meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
         return False, True, meta
     else:
@@ -557,12 +544,11 @@ def fortigate_config_get(data):
     resp = fos.get(functions[0], functions[1], mkey=mkey, vdom=data['vdom'])
     fos.logout()
 
-    meta = {"status": resp['status'], 'reason': resp['status'],
-            'version': resp['version'], 'full_response': resp}
     if resp['status'] == "success":
-        return False, True, meta
+        return False, False, {"status": resp['status'], 'version': resp['version'],
+            'results': resp['results']}
     else:
-        return True, False, meta
+        return True, False, {"status": resp['status'], 'version': resp['version']}
 
 def fortigate_config_monitor(data):
     host = data['host']
@@ -574,12 +560,12 @@ def fortigate_config_monitor(data):
     resp = fos.monitor(functions[0], functions[1], vdom=data['vdom'])
     fos.logout()
 
-    meta = {"status": resp['status'], 'reason': resp['status'],
-            'version': resp['version'], 'full_response': resp}
     if resp['status'] == "success":
-        return False, True, meta
+        return False, False, {"status": resp['status'], 'version': resp['version'],
+            'results': resp['results']}
     else:
-        return True, False, meta
+        return True, False, {"status": resp['status'], 'version': resp['version']}
+
 
 
 def fortigate_config_del(data):
