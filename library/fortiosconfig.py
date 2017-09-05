@@ -85,6 +85,7 @@ logger.setLevel(logging.DEBUG)
 
 AVAILABLE_CONF = [
     'system resource',
+    'system vdom-resource',
     'alertemail setting',
     'antivirus heuristic',
     'antivirus profile',
@@ -545,10 +546,15 @@ def fortigate_config_get(data):
     fos.logout()
 
     if resp['status'] == "success":
-        return False, False, {"status": resp['status'], 'version': resp['version'],
-            'results': resp['results']}
+        return False, False, {
+            "status": resp['status'],
+            'version': resp['version'], 'results': resp['results']
+            }
     else:
-        return True, False, {"status": resp['status'], 'version': resp['version']}
+        return True, False, {
+            "status": resp['status'], 'version': resp['version']
+            }
+
 
 def fortigate_config_monitor(data):
     host = data['host']
@@ -561,11 +567,12 @@ def fortigate_config_monitor(data):
     fos.logout()
 
     if resp['status'] == "success":
-        return False, False, {"status": resp['status'], 'version': resp['version'],
+        return False, False, {
+            "status": resp['status'], 'version': resp['version'],
             'results': resp['results']}
     else:
-        return True, False, {"status": resp['status'], 'version': resp['version']}
-
+        return True, False, {
+            "status": resp['status'], 'version': resp['version']}
 
 
 def fortigate_config_del(data):

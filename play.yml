@@ -1,8 +1,8 @@
 - hosts: localhost
 #  strategy: debug
   vars:
-   host: "192.168.122.70"
-#   host:  "192.168.115.128"
+#   host: "192.168.122.70"
+   host:  "192.168.115.128"
    username: "admin"
    password: ""
    vdom: "root"
@@ -11,7 +11,7 @@
 # here to ensure update/downgrade if needed (optional)
   - pip: 
      name: fortiosapi
-     version: 0.8.1
+     version: 0.9.2
   - name: Set static route on the fortigate
     fortiosconfig:
      action: "set"
@@ -75,7 +75,7 @@
         fmg: "10.210.67.18"
   - name: system resource
     fortiosconfig:
-     config: "system resource"
+     config: "system vdom-resource"
      action: "monitor"
      host:  "{{ host }}"  
      username: "{{ username }}"  
