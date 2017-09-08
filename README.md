@@ -1,9 +1,17 @@
 # 40ansible
 Ansible modules for Fortigates
 
-Depends on https://pypi.python.org/pypi/fortigateconf
+Depends on https://pypi.python.org/pypi/fortiosapi
 prefer to use:
-`pip install fortigateconf ` 
+`pip install fortiosapi `
+
+If your environment does not support pip installation there is a copy
+in library on this project and you can copy it using Ansible itself as
+with the following example:
+` tasks:
+  - name: Upload python module wrkaround when pip is not an option.
+    copy: src=library/fortiosapi.py dest=/usr/local/lib/python2.7/dist-packages/fortiosapi.py
+`
 
 # Quickstart
 `git clone https://github.com/thomnico/40ansible.git`

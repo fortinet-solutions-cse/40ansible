@@ -1,13 +1,17 @@
 - hosts: localhost
 #  strategy: debug
   vars:
-   host: "192.168.115.128"
+#   host: "192.168.122.70"
+   host:  "192.168.115.128"
    username: "admin"
-   password: "adminpasswd"
+   password: ""
    vdom: "root"
   tasks:
-#  - name: Upload python module wrkaround when pip is not an option.
-#    copy: src=library/fortiosapi.py dest=/usr/local/lib/python2.7/dist-packages/fortiosapi.py
+# If you manage python pip externaly you don't need that version is
+# here to ensure update/downgrade if needed (optional)
+  - pip: 
+     name: fortiosapi
+     version: 0.9.2
   - name: Set static route on the fortigate
     fortiosconfig:
      action: "set"
@@ -21,7 +25,7 @@
        dst: "10.10.32.0 255.255.255.0"
        device: "port2"
        gateway: "192.168.40.252"
-  - name: add firewall address 
+  - name: add multiple firewall address 
     fortiosconfig:
      config: "firewall address"
      action: "set"
@@ -30,10 +34,13 @@
      password: "{{ password }}"  
      vdom:  "{{  vdom }}"
      config_parameters:
-       wildcard-fqdn: "*.libertyglobal.com"
-       name: "lb-ansible"
+       wildcard-fqdn: "*.{{ item }}"
+       name: "all.{{ item }}"
        type: "wildcard-fqdn"
-  - name: add  firewall policy
+    with_items:
+       - "fortinet.com"
+       - "acme.org"
+  - name:   firewall policy
     fortiosconfig:
      config: "firewall policy"
      action: "set"
@@ -66,3 +73,21 @@
      config_parameters:
         "type": "fortimanager"
         fmg: "10.210.67.18"
+  - name: system resource
+    fortiosconfig:
+     config: "system vdom-resource"
+     action: "monitor"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"
+     vdom: "global"
+  - name: Get information 
+    fortiosconfig:
+     config: "system global"
+     action: "get"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"
+     vdom: "global"
+     config_parameters:
+       name: "global"
