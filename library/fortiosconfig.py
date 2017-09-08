@@ -522,8 +522,14 @@ def fortigate_config_del(data):
     dataconf = data['config_parameters']
     mkey = dataconf[keyname]
     resp = fos.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
+<<<<<<< Updated upstream
     fos.logout()    
     meta = {"status": resp['status'],'reason': resp['reason'], 'version': resp['version'], }
+=======
+    fos.logout()
+
+    meta = {"status": resp['status'], 'version': resp['version'], }
+>>>>>>> Stashed changes
     if resp['status'] == "success":
         return False, True, meta
     else:
@@ -532,7 +538,29 @@ def fortigate_config_del(data):
         else:
             return True, False, meta
 
+<<<<<<< Updated upstream
         
+=======
+def fortigate_config_ssh(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    vdom = data['vdom']
+    commands = data['commands']
+    
+    resp = fos.ssh(commands,host,username,password=password)
+    
+    meta = {"status": resp['status'],
+            'version': resp['version'], }
+    if resp['status'] == "success":
+        return False, True, meta
+    else:
+        if resp['reason'] == "Not Found":
+            return False, False, meta
+        else:
+            return True, False, meta
+
+>>>>>>> Stashed changes
 def main():
 
     fields = {
@@ -540,14 +568,24 @@ def main():
         "password": {"required": False, "type": "str"},
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
+<<<<<<< Updated upstream
         "vdom": {"required": False, "type": "str", "default":"root"},
         "config": {"required": True,"choices":AVAILABLE_CONF , "type": "str"},
         "action": {
             "default": "set",
             "choices": ['set', 'delete','put','post'],
+=======
+        "vdom": {"required": False, "type": "str", "default": "root"},
+        "config": {"required": False, "choices": AVAILABLE_CONF, "type": "str"},
+        "mkey": {"required": False, "type": "str"},
+        "action": {
+            "default": "set",
+            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh'],
+>>>>>>> Stashed changes
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
+        "commands": {"required": False, "type": "str"},
     }
 
     choice_map = {
@@ -555,6 +593,12 @@ def main():
         "delete": fortigate_config_del,
         "put": fortigate_config_put,
         "post": fortigate_config_post,
+<<<<<<< Updated upstream
+=======
+        "get": fortigate_config_get,
+        "monitor": fortigate_config_monitor,
+        "ssh": fortigate_config_ssh,
+>>>>>>> Stashed changes
     }
 
     module = AnsibleModule(argument_spec=fields)
