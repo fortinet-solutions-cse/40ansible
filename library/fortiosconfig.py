@@ -591,8 +591,8 @@ def fortigate_config_del(data):
     resp = fos.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
     fos.logout()
 
-    meta = {"status": resp['status'], 'reason': resp['reason'],
-            'version': resp['version'], }
+    meta = {"status": resp['status'], 'version': resp['version'], }
+
     if resp['status'] == "success":
         return False, True, meta
     else:
@@ -601,6 +601,19 @@ def fortigate_config_del(data):
         else:
             return True, False, meta
 
+def fortigate_config_ssh(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    vdom = data['vdom']
+    cmds = data['commands']
+
+    try:
+        out, err = fos.ssh(cmds,host,username,password=password)
+        meta = {"out": out, "err": err,}
+        return False, True, meta
+    except:
+        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
 
 def main():
     fields = {
@@ -609,14 +622,15 @@ def main():
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
-        "config": {"required": True, "choices": AVAILABLE_CONF, "type": "str"},
+        "config": {"required": False, "choices": AVAILABLE_CONF, "type": "str"},
         "mkey": {"required": False, "type": "str"},
         "action": {
             "default": "set",
-            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor'],
+            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
+        "commands": {"required": False, "type": "str"},
     }
 
     choice_map = {
@@ -626,6 +640,7 @@ def main():
         "post": fortigate_config_post,
         "get": fortigate_config_get,
         "monitor": fortigate_config_monitor,
+        "ssh": fortigate_config_ssh,
     }
 
     module = AnsibleModule(argument_spec=fields)
