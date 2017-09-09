@@ -29,6 +29,11 @@ import requests
 import sys
 import pprint
 import socket, paramiko
+logging.getLogger("paramiko").setLevel(logging.DEBUG)
+logging.getLogger("paramiko.transport").setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
+
+
 
 DOCUMENTATION = '''
 ---
@@ -75,11 +80,15 @@ EXAMPLES = '''
 
 formatter = logging.Formatter(
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-logger = logging.getLogger('fortiosapi')
-hdlr = logging.FileHandler('/var/tmp/ansible-fortiosconfig.log')
+paramikolog = logging.getLogger("paramiko")
+logging.getLogger("paramiko.transport").setLevel(logging.DEBUG)
+hdlr.setFormatter(formatter)
+paramikolog.addHandler(hdlr)
+hdlr = logging.FileHandler('ansible-fortiosconfig.log')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
+
 
   def ssh(self, cmds, host, user, password=None):
         ''' Send a multi line string via ssh to the fortigate '''
@@ -131,21 +140,16 @@ def main():
         "password": {"required": False, "type": "str"},
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
-        "vdom": {"required": False, "type": "str", "default": "root"},
-        "config": {"required": False, "choices": AVAILABLE_CONF, "type": "str"},
-        "mkey": {"required": False, "type": "str"},
         "action": {
-            "default": "set",
-            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh'],
+            "default": "ssh",
+            "choices": ['ssh'],
             "type": 'str'
         },
-        "config_parameters": {"required": False, "type": "dict"},
         "commands": {"required": False, "type": "str"},
     }
 
     choice_map = {
         "ssh": fortimail_config_ssh,
-
     }
 
     module = AnsibleModule(argument_spec=fields)
