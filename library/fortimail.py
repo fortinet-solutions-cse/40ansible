@@ -118,6 +118,9 @@ logger.setLevel(logging.DEBUG)
         channel.close()
         # commands is a multiline string using the ''' string ''' format
         # must split the multiline and send cmd one by one.
+        #for line in cmds.splitlines():
+        #    channel.send(line+'\n')
+        #should work
 
 
 def fortimail_config_ssh(data):
