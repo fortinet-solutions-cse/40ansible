@@ -29,10 +29,6 @@ import requests
 import sys
 import pprint
 import socket, paramiko
-logging.getLogger("paramiko").setLevel(logging.DEBUG)
-logging.getLogger("paramiko.transport").setLevel(logging.DEBUG)
-logger.setLevel(logging.DEBUG)
-
 
 
 DOCUMENTATION = '''
@@ -44,95 +40,95 @@ fortimail from frotinet
 
 EXAMPLES = '''
 - hosts: localhost
-  strategy: debug
+#  strategy: debug
   vars:
-   host: "192.168.40.8"
+   host: "192.168.122.42"
    username: "admin"
    password: ""
-   vdom: "root"
   tasks:
-  - name: Set static route on the fortigate
-    fortiosconfig:
-     action: "set"
-     host:  "{{  host }}"
-     username: "{{  username}}"
-     password: "{{ password }}"
-     vdom:  "{{  vdom }}"
-     config: "router static"
-     config_parameters:
-       seq-num: "8"
-       dst: "10.10.32.0 255.255.255.0"
-       device: "port2"
-       gateway: "192.168.40.252"
-  - name: Delete firewall address
-    fortiosconfig:
-     config: "firewall address"
-     action: "delete"
-     host:  "{{ host }}"
-     username: "{{ username }}"
-     password: "{{ password }}"
-     vdom:  "{{  vdom }}"
-     config_parameters:
-       wildcard-fqdn: "*.test.ansible.com"
-       name: "test-ansible"
-       type: "wildcard-fqdn"
+  - name: Try to pass cli cmd ssh
+    fortimail:
+     action: "ssh"
+     host:  "{{  host }}"  
+     username: "{{  username}}"  
+     password: "{{ password }}"  
+     commands: |
+               get system interface
+
 '''
+
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
 
 formatter = logging.Formatter(
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-paramikolog = logging.getLogger("paramiko")
-logging.getLogger("paramiko.transport").setLevel(logging.DEBUG)
+
+LOG = logging.getLogger("fortimail")
+
+hdlr = logging.FileHandler('/var/tmp/ansible-fortimailconfig.log')
+#logging.getLogger("paramiko.transport").setLevel(logging.DEBUG)
+pLOG = logging.getLogger("paramiko")
+pLOG.setLevel(logging.DEBUG)
 hdlr.setFormatter(formatter)
-paramikolog.addHandler(hdlr)
-hdlr = logging.FileHandler('ansible-fortiosconfig.log')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
+pLOG.addHandler(hdlr)
+LOG.addHandler(hdlr)
+
+LOG.setLevel(logging.DEBUG)
 
 
-  def ssh(self, cmds, host, user, password=None):
-        ''' Send a multi line string via ssh to the fortigate '''
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.load_system_host_keys()
-        
-        PORT = 22            # The same port as used by the server
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, PORT))
-        t = paramiko.Transport(sock)
-        t.start_client()
-        t.auth_password(username=user, password=password, event=None, fallback=True)
-        channel = t.open_channel("session")
-        channel.invoke_shell()
-        channel.set_combine_stderr(True)
-        channel.send('\n')
-        while not channel.recv_ready():
-            time.sleep(1)
-        out = channel.recv(999)
-        channel.send('get system interface\n')
-        while not channel.recv_ready():
-            time.sleep(1)
-            
-        out = channel.recv(999)
-        print(out.decode("ascii"))
-        channel.close()
-        # commands is a multiline string using the ''' string ''' format
-        # must split the multiline and send cmd one by one.
-        #for line in cmds.splitlines():
-        #    channel.send(line+'\n')
-        #should work
+
+def ssh( cmds, host, user, password=None):
+    LOG.debug(''' Send a multi line string via ssh to the fortigate ''')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.load_system_host_keys()
+    
+    PORT = 22            # The same port as used by the server
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, PORT))
+    LOG.debug("socket openned")
+    t = paramiko.Transport(sock)
+    t.start_client()
+    t.auth_password(username=user, password=password, event=None, fallback=True)
+    channel = t.open_channel("session")
+    LOG.debug("logged move to shell")
+    channel.invoke_shell()
+    channel.set_combine_stderr(True)
+    channel.send('\n')
+    while not channel.recv_ready():
+        time.sleep(1)
+    out = channel.recv(999)
+    for line in cmds.splitlines():
+        channel.send(line+'\n')
+        #channel.send('get system interface\n')
+    while not channel.recv_ready():
+        time.sleep(1)
+
+    out = channel.recv(999)
+    return out.decode("ascii")
+    channel.close()
+    # commands is a multiline string using the ''' string ''' format
+    # must split the multiline and send cmd one by one.
+    #for line in cmds.splitlines():
+    #    channel.send(line+'\n')
+    #should work
 
 
 def fortimail_config_ssh(data):
     host = data['host']
     username = data['username']
     password = data['password']
-    vdom = data['vdom']
     cmds = data['commands']
-
+    LOG.debug("in fortimail_config")
     try:
-        out, err = self.ssh(cmds,host,username,password=password)
-        meta = {"out": out, "err": err,}
+        LOG.debug("calling ssh with host=%s, cmds=%s", host, cmds)
+        out = ssh(cmds, host, username, password=password)
+        LOG.debug("out :%s",out)
+        meta = {"out": out} 
         return False, True, meta
     except:
         return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
