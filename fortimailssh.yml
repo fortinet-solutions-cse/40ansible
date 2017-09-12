@@ -15,6 +15,6 @@
      commands: |
                get system interface
                get system status
-               execute update-now
+               execute update now
 
 
