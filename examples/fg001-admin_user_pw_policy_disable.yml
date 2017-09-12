@@ -25,7 +25,7 @@
       min-upper-case-letter: "2"
       minimum-length: "8"
       reuse-password: "disable"
-    when: configuration is defined
+
 
   - name: get password complexity req
     fortiosconfig:
@@ -47,4 +47,4 @@
 
   - fail:
       msg: "Password policy not enabled for admin users"
-    when: pwd_policy_status != "enable"
+  

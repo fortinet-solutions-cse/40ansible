@@ -592,6 +592,7 @@ def fortigate_config_del(data):
     fos.logout()
 
     meta = {"status": resp['status'], 'version': resp['version'], }
+
     if resp['status'] == "success":
         return False, True, meta
     else:
@@ -600,6 +601,19 @@ def fortigate_config_del(data):
         else:
             return True, False, meta
 
+def fortigate_config_ssh(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    vdom = data['vdom']
+    cmds = data['commands']
+
+    try:
+        out, err = fos.ssh(cmds,host,username,password=password)
+        meta = {"out": out, "err": err,}
+        return False, True, meta
+    except:
+        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
 
 def fortigate_config_ssh(data):
     host = data['host']
@@ -641,7 +655,6 @@ def main():
         "get": fortigate_config_get,
         "monitor": fortigate_config_monitor,
         "ssh": fortigate_config_ssh,
-
     }
 
     module = AnsibleModule(argument_spec=fields)
