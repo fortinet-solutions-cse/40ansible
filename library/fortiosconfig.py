@@ -615,6 +615,20 @@ def fortigate_config_ssh(data):
     except:
         return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
 
+def fortigate_config_ssh(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    vdom = data['vdom']
+    cmds = data['commands']
+
+    try:
+        out, err = fos.ssh(cmds,host,username,password=password)
+        meta = {"out": out, "err": err,}
+        return False, True, meta
+    except:
+        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
+
 def main():
     fields = {
         "host": {"required": True, "type": "str"},
