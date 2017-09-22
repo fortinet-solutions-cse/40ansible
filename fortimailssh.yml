@@ -1,18 +1,20 @@
 - hosts: localhost
 #  strategy: debug
   vars:
-   host: "192.168.122.70"
+   host: "192.168.122.42"
    username: "admin"
    password: ""
-   vdom: "root"
+#   vdom: "root"
   tasks:
-  - name: pass cli cmd ssh
-    fortiosconfig:
+  - name: Try to pass cli cmd ssh
+    fortimail:
      action: "ssh"
      host:  "{{  host }}"  
      username: "{{  username}}"  
      password: "{{ password }}"  
      commands: |
-               execute update-now
+               get system interface
                get system status
-               
+               execute update now
+
+
