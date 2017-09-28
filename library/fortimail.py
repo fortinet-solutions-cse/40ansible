@@ -35,7 +35,7 @@ DOCUMENTATION = '''
 ---
 module: fortimail
 short_description: Module to configure all aspects of \
-fortimail from frotinet 
+fortimail from Fortinet 
 '''
 
 EXAMPLES = '''
