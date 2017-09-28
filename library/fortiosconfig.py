@@ -291,6 +291,7 @@ AVAILABLE_CONF = [
     'system auto-script',
     'system central-management',
     'system cluster-sync',
+    'system config backup',
     'system console',
     'system custom-language',
     'system ddns',
@@ -615,19 +616,55 @@ def fortigate_config_ssh(data):
     except:
         return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
 
-def fortigate_config_ssh(data):
+
+def fortigate_config_backup(data):
     host = data['host']
     username = data['username']
     password = data['password']
-    vdom = data['vdom']
-    cmds = data['commands']
+    fos.login(host, username, password)
 
-    try:
-        out, err = fos.ssh(cmds,host,username,password=password)
-        meta = {"out": out, "err": err,}
-        return False, True, meta
-    except:
-        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
+    functions = data['config'].split()
+
+    parameters = { "destination":"file",
+                   "scope":"global"}
+
+    resp = fos.monitor(functions[0]+'/'+functions[1],
+                       functions[2],
+                       vdom=data['vdom'],
+                       parameters=parameters)
+
+    if resp['status'] != "success":
+        return True, False, {
+            "status": resp['status'],
+            'version': resp['version'], 'results': resp['results']
+            }
+
+    remote_filename = resp["results"]["DOWNLOAD_SOURCE_FILE"]
+
+
+    parameters = { "scope":"global" }
+
+    resp = fos.download(functions[0]+'/'+functions[1],
+                        functions[2]+remote_filename,
+                        vdom=data['vdom'],
+                        parameters=parameters)
+
+    fos.logout()
+
+    if resp.status_code == 200:
+        file = open(data['config_parameters']['filename'],'w')
+        file.write(resp.content)
+        file.close()
+        return False, False, {
+            "status": resp.status_code,
+            "version": fos.get_version(),
+            "backup" : resp.content
+            }
+    else:
+        return True, False, {
+            "status": resp.status_code,
+            'version': fos.get_version()
+            }
 
 def main():
     fields = {
@@ -640,7 +677,7 @@ def main():
         "mkey": {"required": False, "type": "str"},
         "action": {
             "default": "set",
-            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh'],
+            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh','backup'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
@@ -655,6 +692,7 @@ def main():
         "get": fortigate_config_get,
         "monitor": fortigate_config_monitor,
         "ssh": fortigate_config_ssh,
+        "backup": fortigate_config_backup
     }
 
     module = AnsibleModule(argument_spec=fields)
