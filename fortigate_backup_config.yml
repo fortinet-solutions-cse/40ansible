@@ -5,13 +5,13 @@
    password: ""
    vdom: "global"
   tasks:
-  - name: system config restore
+  - name: backup system config
     fortiosconfig:
-     config: "system config restore"
-     action: "restore"
+     config: "system config backup"
+     action: "backup"
      host:  "{{ host }}"
      username: "{{ username }}"
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
      config_parameters:
-      filename: "backup_config_001"
+      filename: "backup_config_002"

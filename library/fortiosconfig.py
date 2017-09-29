@@ -23,10 +23,10 @@
 
 from ansible.module_utils.basic import *
 from fortiosapi import FortiOSAPI
-from base64 import b64encode
 import json
 from argparse import Namespace
 import logging
+import difflib
 
 
 DOCUMENTATION = '''
@@ -601,6 +601,7 @@ def fortigate_config_del(data):
         else:
             return True, False, meta
 
+
 def fortigate_config_ssh(data):
     host = data['host']
     username = data['username']
@@ -614,6 +615,59 @@ def fortigate_config_ssh(data):
         return False, True, meta
     except:
         return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
+
+
+def check_diff(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+
+    fos.login(host, username, password)
+
+    parameters = {'destination': 'file',
+                  'scope': 'global'}
+
+    resp = fos.monitor('system/config',
+                       'backup',
+                       vdom=data['vdom'],
+                       parameters=parameters)
+
+    if resp['status'] != 'success':
+        return True, False, {
+            'status': resp['status'],
+            'version': resp['version'],
+            'results': resp['results']
+        }
+
+    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
+    parameters = {'scope': 'global'}
+
+    resp = fos.download('system/config',
+                       'backup'+ remote_filename,
+                        vdom=data['vdom'],
+                        parameters=parameters)
+    fos.logout()
+
+    if resp.status_code == 200:
+
+        remote_config_file = resp.content.strip().splitlines()
+        local_config_file = open(data['config_parameters']['filename'], 'r').read().strip().splitlines()
+
+        differences = ""
+        for line in difflib.unified_diff(local_config_file, remote_config_file, fromfile='local', tofile='fortigate',
+                                         lineterm=''):
+            differences += line+'\n'
+
+        return False, True, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'diff': differences
+        }
+    else:
+        return True, False, {
+            'status': resp.status_code,
+            'version': fos.get_version()
+        }
 
 
 def fortigate_config_backup(data):
@@ -670,6 +724,9 @@ def fortigate_config_restore(data):
     password = data['password']
     fos.login(host, username, password)
 
+    if data['diff'] == True:
+        return check_diff(data)
+
     functions = data['config'].split()
 
     parameters = { 'global':'1' }
@@ -694,6 +751,7 @@ def fortigate_config_restore(data):
             'result': resp.content
             }
 
+
 def main():
     fields = {
         "host": {"required": True, "type": "str"},
@@ -711,7 +769,7 @@ def main():
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
-        "commands": {"required": False, "type": "str"},
+        "commands": {"required": False, "type": "str"}
     }
 
     choice_map = {
@@ -726,12 +784,17 @@ def main():
         "restore": fortigate_config_restore
     }
 
-    module = AnsibleModule(argument_spec=fields)
+    module = AnsibleModule(argument_spec=fields,
+                           supports_check_mode=False)
+    module.params['diff'] = module._diff
     is_error, has_changed, result = choice_map.get(
         module.params['action'])(module.params)
 
     if not is_error:
-        module.exit_json(changed=has_changed, meta=result)
+        if (module._diff):
+            module.exit_json(changed=has_changed, meta=result, diff={'prepared': result['diff']})
+        else:
+            module.exit_json(changed=has_changed, meta=result)
     else:
         module.fail_json(msg="Error in repo", meta=result)
 
