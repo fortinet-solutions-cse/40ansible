@@ -8,6 +8,7 @@
             "host": "192.168.122.40",
             "password": "",
             "username": "admin",
-            "vdom": "global"
+            "vdom": "global",
+            "_ansible_diff":"True"
         }
 }
