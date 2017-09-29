@@ -23,12 +23,10 @@
 
 from ansible.module_utils.basic import *
 from fortiosapi import FortiOSAPI
+from base64 import b64encode
 import json
 from argparse import Namespace
 import logging
-import requests
-import sys
-import pprint
 
 
 DOCUMENTATION = '''
@@ -292,6 +290,7 @@ AVAILABLE_CONF = [
     'system central-management',
     'system cluster-sync',
     'system config backup',
+    'system config restore',
     'system console',
     'system custom-language',
     'system ddns',
@@ -625,30 +624,28 @@ def fortigate_config_backup(data):
 
     functions = data['config'].split()
 
-    parameters = { "destination":"file",
-                   "scope":"global"}
+    parameters = { 'destination':'file',
+                   'scope':'global'}
 
     resp = fos.monitor(functions[0]+'/'+functions[1],
                        functions[2],
                        vdom=data['vdom'],
                        parameters=parameters)
 
-    if resp['status'] != "success":
+    if resp['status'] != 'success':
         return True, False, {
-            "status": resp['status'],
-            'version': resp['version'], 'results': resp['results']
+            'status': resp['status'],
+            'version': resp['version'],
+            'results': resp['results']
             }
 
-    remote_filename = resp["results"]["DOWNLOAD_SOURCE_FILE"]
-
-
-    parameters = { "scope":"global" }
+    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
+    parameters = { 'scope':'global' }
 
     resp = fos.download(functions[0]+'/'+functions[1],
                         functions[2]+remote_filename,
                         vdom=data['vdom'],
                         parameters=parameters)
-
     fos.logout()
 
     if resp.status_code == 200:
@@ -656,14 +653,45 @@ def fortigate_config_backup(data):
         file.write(resp.content)
         file.close()
         return False, False, {
-            "status": resp.status_code,
-            "version": fos.get_version(),
-            "backup" : resp.content
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'backup' : resp.content
             }
     else:
         return True, False, {
-            "status": resp.status_code,
+            'status': resp.status_code,
             'version': fos.get_version()
+            }
+
+
+def fortigate_config_restore(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    fos.login(host, username, password)
+
+    functions = data['config'].split()
+
+    parameters = { 'global':'1' }
+    upload_data = {'source':'upload', 'scope':'global'}
+    files = {'file': ('backup_data', open(data['config_parameters']['filename'], 'r'), 'text/plain')}
+
+    resp = fos.upload(functions[0]+'/'+functions[1],functions[2],
+                             data=upload_data,
+                             parameters=parameters,
+                             files=files )
+
+    if resp.status_code == 200:
+        return False, True, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'result' : resp.content
+            }
+    else:
+        return True, False, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'result': resp.content
             }
 
 def main():
@@ -677,7 +705,9 @@ def main():
         "mkey": {"required": False, "type": "str"},
         "action": {
             "default": "set",
-            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh','backup'],
+            "choices": ['set', 'delete', 'put',
+                        'post', 'get', 'monitor',
+                        'ssh','backup','restore'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
@@ -692,7 +722,8 @@ def main():
         "get": fortigate_config_get,
         "monitor": fortigate_config_monitor,
         "ssh": fortigate_config_ssh,
-        "backup": fortigate_config_backup
+        "backup": fortigate_config_backup,
+        "restore": fortigate_config_restore
     }
 
     module = AnsibleModule(argument_spec=fields)
