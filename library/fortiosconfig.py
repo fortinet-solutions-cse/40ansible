@@ -27,7 +27,7 @@ import json
 from argparse import Namespace
 import logging
 import difflib
-
+import re
 
 DOCUMENTATION = '''
 ---
@@ -617,6 +617,45 @@ def fortigate_config_ssh(data):
         return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
 
 
+def remove_sensitive_data(string):
+
+    while True:
+        filtered_string = re.sub('set password ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set passwd ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set private-key.*?-----END ENCRYPTED PRIVATE KEY-----"',
+                               '',
+                                 string,
+                                 flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set certificate.*?-----END CERTIFICATE-----"',
+                               '',
+                                 string,
+                                 flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    return filtered_string
+
+
 def check_diff(data):
     host = data['host']
     username = data['username']
@@ -650,8 +689,11 @@ def check_diff(data):
 
     if resp.status_code == 200:
 
-        remote_config_file = resp.content.strip().splitlines()
-        local_config_file = open(data['config_parameters']['filename'], 'r').read().strip().splitlines()
+        filtered_remote_config_file = remove_sensitive_data(resp.content)
+        filtered_local_config_file = remove_sensitive_data(open(data['config_parameters']['filename'], 'r').read())
+
+        remote_config_file = filtered_remote_config_file.strip().splitlines()
+        local_config_file = filtered_local_config_file.strip().splitlines()
 
         differences = ""
         for line in difflib.unified_diff(local_config_file, remote_config_file, fromfile='local', tofile='fortigate',
@@ -703,6 +745,7 @@ def fortigate_config_backup(data):
     fos.logout()
 
     if resp.status_code == 200:
+
         file = open(data['config_parameters']['filename'],'w')
         file.write(resp.content)
         file.close()
