@@ -26,10 +26,8 @@ from fortiosapi import FortiOSAPI
 import json
 from argparse import Namespace
 import logging
-import requests
-import sys
-import pprint
-
+import difflib
+import re
 
 DOCUMENTATION = '''
 ---
@@ -291,6 +289,8 @@ AVAILABLE_CONF = [
     'system auto-script',
     'system central-management',
     'system cluster-sync',
+    'system config backup',
+    'system config restore',
     'system console',
     'system custom-language',
     'system ddns',
@@ -601,19 +601,6 @@ def fortigate_config_del(data):
         else:
             return True, False, meta
 
-def fortigate_config_ssh(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    vdom = data['vdom']
-    cmds = data['commands']
-
-    try:
-        out, err = fos.ssh(cmds,host,username,password=password)
-        meta = {"out": out, "err": err,}
-        return False, True, meta
-    except:
-        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
 
 def fortigate_config_ssh(data):
     host = data['host']
@@ -628,6 +615,185 @@ def fortigate_config_ssh(data):
         return False, True, meta
     except:
         return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
+
+
+def remove_sensitive_data(string):
+
+    while True:
+        filtered_string = re.sub('set password ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set passwd ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set private-key.*?-----END ENCRYPTED PRIVATE KEY-----"',
+                               '',
+                                 string,
+                                 flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set certificate.*?-----END CERTIFICATE-----"',
+                               '',
+                                 string,
+                                 flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    return filtered_string
+
+
+def check_diff(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+
+    fos.login(host, username, password)
+
+    parameters = {'destination': 'file',
+                  'scope': 'global'}
+
+    resp = fos.monitor('system/config',
+                       'backup',
+                       vdom=data['vdom'],
+                       parameters=parameters)
+
+    if resp['status'] != 'success':
+        return True, False, {
+            'status': resp['status'],
+            'version': resp['version'],
+            'results': resp['results']
+        }
+
+    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
+    parameters = {'scope': 'global'}
+
+    resp = fos.download('system/config',
+                       'backup'+ remote_filename,
+                        vdom=data['vdom'],
+                        parameters=parameters)
+    fos.logout()
+
+    if resp.status_code == 200:
+
+        filtered_remote_config_file = remove_sensitive_data(resp.content)
+        filtered_local_config_file = remove_sensitive_data(open(data['config_parameters']['filename'], 'r').read())
+
+        remote_config_file = filtered_remote_config_file.strip().splitlines()
+        local_config_file = filtered_local_config_file.strip().splitlines()
+
+        differences = ""
+        for line in difflib.unified_diff(local_config_file, remote_config_file, fromfile='local', tofile='fortigate',
+                                         lineterm=''):
+            differences += line+'\n'
+
+        return False, True, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'diff': differences
+        }
+    else:
+        return True, False, {
+            'status': resp.status_code,
+            'version': fos.get_version()
+        }
+
+
+def fortigate_config_backup(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    fos.login(host, username, password)
+
+    functions = data['config'].split()
+
+    parameters = { 'destination':'file',
+                   'scope':'global'}
+
+    resp = fos.monitor(functions[0]+'/'+functions[1],
+                       functions[2],
+                       vdom=data['vdom'],
+                       parameters=parameters)
+
+    if resp['status'] != 'success':
+        return True, False, {
+            'status': resp['status'],
+            'version': resp['version'],
+            'results': resp['results']
+            }
+
+    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
+    parameters = { 'scope':'global' }
+
+    resp = fos.download(functions[0]+'/'+functions[1],
+                        functions[2]+remote_filename,
+                        vdom=data['vdom'],
+                        parameters=parameters)
+    fos.logout()
+
+    if resp.status_code == 200:
+
+        file = open(data['config_parameters']['filename'],'w')
+        file.write(resp.content)
+        file.close()
+        return False, False, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'backup' : resp.content
+            }
+    else:
+        return True, False, {
+            'status': resp.status_code,
+            'version': fos.get_version()
+            }
+
+
+def fortigate_config_restore(data):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    fos.login(host, username, password)
+
+    if data['diff'] == True:
+        return check_diff(data)
+
+    functions = data['config'].split()
+
+    parameters = { 'global':'1' }
+    upload_data = {'source':'upload', 'scope':'global'}
+    files = {'file': ('backup_data', open(data['config_parameters']['filename'], 'r'), 'text/plain')}
+
+    resp = fos.upload(functions[0]+'/'+functions[1],functions[2],
+                             data=upload_data,
+                             parameters=parameters,
+                             files=files )
+
+    if resp.status_code == 200:
+        return False, True, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'result' : resp.content
+            }
+    else:
+        return True, False, {
+            'status': resp.status_code,
+            'version': fos.get_version(),
+            'result': resp.content
+            }
+
 
 def main():
     fields = {
@@ -640,11 +806,13 @@ def main():
         "mkey": {"required": False, "type": "str"},
         "action": {
             "default": "set",
-            "choices": ['set', 'delete', 'put', 'post', 'get', 'monitor','ssh'],
+            "choices": ['set', 'delete', 'put',
+                        'post', 'get', 'monitor',
+                        'ssh','backup','restore'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
-        "commands": {"required": False, "type": "str"},
+        "commands": {"required": False, "type": "str"}
     }
 
     choice_map = {
@@ -655,14 +823,21 @@ def main():
         "get": fortigate_config_get,
         "monitor": fortigate_config_monitor,
         "ssh": fortigate_config_ssh,
+        "backup": fortigate_config_backup,
+        "restore": fortigate_config_restore
     }
 
-    module = AnsibleModule(argument_spec=fields)
+    module = AnsibleModule(argument_spec=fields,
+                           supports_check_mode=False)
+    module.params['diff'] = module._diff
     is_error, has_changed, result = choice_map.get(
         module.params['action'])(module.params)
 
     if not is_error:
-        module.exit_json(changed=has_changed, meta=result)
+        if (module._diff):
+            module.exit_json(changed=has_changed, meta=result, diff={'prepared': result['diff']})
+        else:
+            module.exit_json(changed=has_changed, meta=result)
     else:
         module.fail_json(msg="Error in repo", meta=result)
 
