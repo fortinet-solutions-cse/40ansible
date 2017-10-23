@@ -1,0 +1,22 @@
+- hosts: localhost
+  vars:
+   auth_url: "http://10.210.8.17/identity/"
+   username: "admin"
+   password: "password"
+   tenant_name: "admin"
+   region_name: "RegionOne"
+  tasks:
+  - name: Instantiate FortiGate in OpenStack
+    fortiosbootstrap:
+     action: "openstack-instantiate"
+     auth_url:  "{{ auth_url }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     tenant_name: "{{ tenant_name }}"
+     region_name: "{{ region_name }}"
+     server_name: "MyFortigate"
+     image_name: "fortigate"
+     flavor_name: "m1.small"
+     network_name: "netM"
+     user_data: "file1.txt"
+     license_file: "license.lic"

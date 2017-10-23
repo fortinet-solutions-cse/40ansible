@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2015 Fortinet, Inc.
+# Copyright 2017 Fortinet, Inc.
 #
 # All Rights Reserved
 #
