@@ -23,6 +23,7 @@
 
 from ansible.module_utils.basic import *
 from novaclient import client
+import novaclient
 import logging
 
 DOCUMENTATION = '''
@@ -65,28 +66,55 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
 
+
+
 def fortigate_openstack_instantiate(data):
+
     auth_url = data['auth_url']
     username = data['username']
     password = data['password']
     tenant_name = data['tenant_name']
+    project_domain = data['project_domain']
+    user_domain = data['user_domain']
     region_name = data['region_name']
-    server_name = data['server_name']
-    image_name= data['image_name']
-    flavor_name= data['flavor_name']
-    network_name = data['network_name']
+    server_name = data['name']
+    image_name= data['image']
+    flavor_name= data['flavor']
+    network_list = data['networks']
 
+    nova = client.Client("2",
+                         username=username,
+                         password=password,
+                         project_name=tenant_name,
+                         project_domain_id=project_domain,
+                         auth_url=auth_url,
+                         user_domain_id=user_domain)
 
+    flavor_id = nova.flavors.find(name=flavor_name)
 
-    nova = client.Client("2", username=username, password=password, project_name=tenant_name, project_domain_id="default", auth_url=auth_url, user_domain_id="default")
+    image_id = nova.glance.find_image(image_name)
 
+    nics = []
 
-    print("Here I am")
-    print(nova.servers.list())
-    print(nova.flavors.list())
-    nova.servers.create(name=server_name, image=image_name, flavor=flavor_name)#, nics=[{"network" : network_name}])
+    for network in network_list:
+        network_id = nova.neutron.find_network(network['net-name']).id
+        nics.append({"net-id":network_id})
 
+    userdata_file = None
+    license_file = None
 
+    if 'user_data' in data:
+        userdata_file = open(data['user_data'],'rb')
+
+    if 'license' in data:
+        license_file = open(data['license'],'rb')
+
+    nova.servers.create(name=server_name,
+                        image=image_id,
+                        flavor=flavor_id,
+                        nics=nics,
+                        userdata=userdata_file,
+                        files={"license":license_file})
 
     return False, True, {
         'status': "200",
@@ -101,24 +129,24 @@ def main():
         "username": {"required": True, "type": "str"},
         "tenant_name": {"required": True, "type": "str"},
         "region_name": {"required": True, "type": "str"},
-        "action": {"required": True, "choices": [ 'openstack-instantiate' ], "type": "str"},
-        "server_name": {"required": True, "type": "str"},
-        "image_name": {"required": True, "type": "str"},
-        "flavor_name": {"required": True, "type": "str"},
-        "network_name": {"required": True, "type": "str"},
-        "user_data": {"required": False, "type": "str"},
-        "license_file": {"required": False, "type": "str"}
-    }
-
-    choice_map = {
-        "openstack-instantiate": fortigate_openstack_instantiate
+        "project_domain": {"required": True, "type": "str"},
+        "user_domain": {"required": True, "type": "str"},
+        "name": {"required": True, "type": "str"},
+        "image": {"required": True, "type": "str"},
+        "state": {"required": False, "type": "str"},
+        "volume_size": {"required": False, "type": "str"},
+        "flavor": {"required": True, "type": "str"},
+        "ssh_key": {"required": False, "type": "str"},
+        "availability_zone": {"required": False, "type": "str"},
+        "networks": {"required": True, "type": "list"},
+        "userdata": {"required": False, "type": "str"},
+        "license": {"required": False, "type": "str"}
     }
 
     module = AnsibleModule(argument_spec=fields,
                            supports_check_mode=False)
     module.params['diff'] = module._diff
-    is_error, has_changed, result = choice_map.get(
-        module.params['action'])(module.params)
+    is_error, has_changed, result = fortigate_openstack_instantiate(module.params)
 
     if not is_error:
         if (module._diff):

@@ -1,16 +1,24 @@
 {
   "ANSIBLE_MODULE_ARGS": {
-    "action": "openstack-instantiate",
     "auth_url": "http://10.210.8.17/identity",
     "username": "admin",
     "password": "password",
     "tenant_name": "admin",
     "region_name": "RegionOne",
-    "server_name": "MyFortigate",
-    "image_name": "0dcbf71e-9cdc-45d0-a003-c0b9fef737c9",
-    "flavor_name": "2",
-    "network_name": "04dab284-3903-4dca-a92c-1c91e38f9d15",
-    "user_data": "file1.txt",
-    "license_file": "license.lic"
+    "project_domain": "default",
+    "user_domain": "default",
+    "name": "MyFortigate2",
+    "image": "fortigate",
+    "state": "present",
+    "volume_size": "1",
+    "flavor": "m1.small",
+    "ssh_key": "t1",
+    "availability_zone": "zone1",
+    "networks": [
+      { "net-name":"netA" },
+      { "net-name":"netB" }
+      ],
+    "userdata": "file1.txt",
+    "license": "license.lic"
   }
 }
