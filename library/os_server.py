@@ -103,10 +103,10 @@ def fortigate_openstack_instantiate(data):
     userdata_file = None
     license_file = None
 
-    if 'user_data' in data:
-        userdata_file = open(data['user_data'],'rb')
+    if ('userdata' in data) and (data['userdata'] is not None):
+        userdata_file = open(data['userdata'],'rb')
 
-    if 'license' in data:
+    if ('license' in data) and (data['license'] is not None):
         license_file = open(data['license'],'rb')
 
     nova.servers.create(name=server_name,
@@ -114,7 +114,7 @@ def fortigate_openstack_instantiate(data):
                         flavor=flavor_id,
                         nics=nics,
                         userdata=userdata_file,
-                        files={"license":license_file})
+                        files={"license":license_file} if license_file is not None else None)
 
     return False, True, {
         'status': "200",

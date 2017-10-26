@@ -9,8 +9,8 @@
     "user_domain": "default",
     "name": "MyFortigate2",
     "image": "fortigate",
-    "state": "present",
-    "volume_size": "1",
+
+
     "flavor": "m1.small",
     "ssh_key": "t1",
     "availability_zone": "zone1",
@@ -18,7 +18,6 @@
       { "net-name":"netA" },
       { "net-name":"netB" }
       ],
-    "userdata": "file1.txt",
-    "license": "license.lic"
+    "userdata": "file1.txt"
   }
 }
