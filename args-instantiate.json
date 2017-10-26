@@ -9,9 +9,9 @@
     "user_domain": "default",
     "name": "MyFortigate2",
     "image": "fortigate",
-
-
-    "flavor": "m1.small",
+    "state": "present",
+    "volume_size": "1",
+    "flavor": "m1.fortigate",
     "ssh_key": "t1",
     "availability_zone": "zone1",
     "networks": [

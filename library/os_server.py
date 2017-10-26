@@ -21,10 +21,13 @@
 # Ansible config.
 # log_path = /var/log/ansible.log in your conf..
 
+from keystoneauth1 import loading
+from keystoneauth1 import session
 from ansible.module_utils.basic import *
-from novaclient import client
-import novaclient
+import novaclient.client
+import cinderclient.client
 import logging
+import time
 
 DOCUMENTATION = '''
 ---
@@ -66,8 +69,6 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
 
-
-
 def fortigate_openstack_instantiate(data):
 
     auth_url = data['auth_url']
@@ -82,13 +83,31 @@ def fortigate_openstack_instantiate(data):
     flavor_name= data['flavor']
     network_list = data['networks']
 
-    nova = client.Client("2",
+    loader = loading.get_plugin_loader('password')
+    auth = loader.load_from_options(username=username,
+                         password=password,
+                         project_name=tenant_name,
+                         project_domain_id=project_domain,
+                         auth_url=auth_url,
+                         user_domain_id=user_domain)
+
+    sess = session.Session(auth=auth)
+
+    nova = novaclient.client.Client('2', session=sess)
+    cinder = cinderclient.client.Client('2',session=sess)
+
+
+
+
+
+    """nova = client.Client("2",
                          username=username,
                          password=password,
                          project_name=tenant_name,
                          project_domain_id=project_domain,
                          auth_url=auth_url,
                          user_domain_id=user_domain)
+                         """
 
     flavor_id = nova.flavors.find(name=flavor_name)
 
@@ -109,8 +128,15 @@ def fortigate_openstack_instantiate(data):
     if ('license' in data) and (data['license'] is not None):
         license_file = open(data['license'],'rb')
 
-    nova.servers.create(name=server_name,
+    volume = cinder.volumes.create(imageRef=image_id.id,
+                          size=2,
+                          name=server_name+"_vol")
+
+    time.sleep(5) #Temporary: allow some time to create the disk: TODO replace with proper poll method
+
+    result = nova.servers.create(name=server_name,
                         image=image_id,
+                        block_device_mapping={"/dev/vda":str(volume.id)+"::2:1"},
                         flavor=flavor_id,
                         nics=nics,
                         userdata=userdata_file,
