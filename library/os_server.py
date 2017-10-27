@@ -83,6 +83,19 @@ def fortigate_openstack_instantiate(data):
     flavor_name= data['flavor']
     network_list = data['networks']
 
+    userdata_file = None
+    license_file = None
+    avzone = None
+
+    if ('userdata' in data) and (data['userdata'] is not None):
+        userdata_file = open(data['userdata'],'rb')
+
+    if ('license' in data) and (data['license'] is not None):
+        license_file = open(data['license'],'rb')
+
+    if ('availability_zone' in data) and (data['availability_zone'] is not None):
+        avzone = data['availability_zone']
+
     loader = loading.get_plugin_loader('password')
     auth = loader.load_from_options(username=username,
                          password=password,
@@ -96,19 +109,6 @@ def fortigate_openstack_instantiate(data):
     nova = novaclient.client.Client('2', session=sess)
     cinder = cinderclient.client.Client('2',session=sess)
 
-
-
-
-
-    """nova = client.Client("2",
-                         username=username,
-                         password=password,
-                         project_name=tenant_name,
-                         project_domain_id=project_domain,
-                         auth_url=auth_url,
-                         user_domain_id=user_domain)
-                         """
-
     flavor_id = nova.flavors.find(name=flavor_name)
 
     image_id = nova.glance.find_image(image_name)
@@ -119,26 +119,21 @@ def fortigate_openstack_instantiate(data):
         network_id = nova.neutron.find_network(network['net-name']).id
         nics.append({"net-id":network_id})
 
-    userdata_file = None
-    license_file = None
 
-    if ('userdata' in data) and (data['userdata'] is not None):
-        userdata_file = open(data['userdata'],'rb')
-
-    if ('license' in data) and (data['license'] is not None):
-        license_file = open(data['license'],'rb')
 
     volume = cinder.volumes.create(imageRef=image_id.id,
-                          size=2,
-                          name=server_name+"_vol")
+                                   size=2,
+                                   availability_zone=avzone,
+                                   name=server_name+"_vol")
 
-    time.sleep(5) #Temporary: allow some time to create the disk: TODO replace with proper poll method
+    time.sleep(20) #Temporary: allow some time to create the disk: TODO replace with proper poll method
 
     result = nova.servers.create(name=server_name,
                         image=image_id,
                         block_device_mapping={"/dev/vda":str(volume.id)+"::2:1"},
                         flavor=flavor_id,
                         nics=nics,
+                        availability_zone=avzone,
                         userdata=userdata_file,
                         files={"license":license_file} if license_file is not None else None)
 
