@@ -13,11 +13,12 @@
     "volume_size": "1",
     "flavor": "m1.fortigate",
     "ssh_key": "t1",
-    "availability_zone": "zone1",
+    "availability_zone": "nova",
     "networks": [
       { "net-name":"netA" },
       { "net-name":"netB" }
       ],
-    "userdata": "file1.txt"
+    "userdata": "file1.txt",
+    "license": "license.lic"
   }
 }

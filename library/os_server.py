@@ -126,7 +126,11 @@ def fortigate_openstack_instantiate(data):
                                    availability_zone=avzone,
                                    name=server_name+"_vol")
 
-    time.sleep(20) #Temporary: allow some time to create the disk: TODO replace with proper poll method
+    volume_userdata = cinder.volumes.create(size=1,
+                                   availability_zone=avzone,
+                                   name=server_name+"_vol_userdata")
+
+    time.sleep(15) #Temporary: allow some time to create the disk: TODO replace with proper poll method
 
     result = nova.servers.create(name=server_name,
                         image=image_id,
@@ -136,6 +140,8 @@ def fortigate_openstack_instantiate(data):
                         availability_zone=avzone,
                         userdata=userdata_file,
                         files={"license":license_file} if license_file is not None else None)
+
+    #TODO: Check Result and return proper code. For now it works ok cause it gives exception when fails
 
     return False, True, {
         'status': "200",
