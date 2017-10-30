@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2015 Fortinet, Inc.
+# Copyright 2017 Fortinet, Inc.
 #
 # All Rights Reserved
 #
@@ -28,6 +28,10 @@ from argparse import Namespace
 import logging
 import difflib
 import re
+
+ANSIBLE_METADATA = {'status': ['preview'],
+                    'supported_by': 'community',
+                    'metadata_version': '1.1'}
 
 DOCUMENTATION = '''
 ---
@@ -73,8 +77,8 @@ EXAMPLES = '''
 '''
 
 fos = FortiOSAPI()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s %(name)-12s '
+                              '%(levelname)-8s %(message)s')
 logger = logging.getLogger('fortiosapi')
 hdlr = logging.FileHandler('/var/tmp/ansible-fortiosconfig.log')
 hdlr.setFormatter(formatter)
@@ -610,32 +614,20 @@ def fortigate_config_ssh(data):
     cmds = data['commands']
 
     try:
-        out, err = fos.ssh(cmds,host,username,password=password)
-        meta = {"out": out, "err": err,}
+        out, err = fos.ssh(cmds, host, username, password=password)
+        meta = {"out": out, "err": err, }
         return False, True, meta
     except:
-        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
+        return True,\
+            False,\
+            {"out": "n/a", "err": "at least one cmd returned an error"}
 
 
 def remove_sensitive_data(string):
 
     while True:
-        filtered_string = re.sub('set password ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
-        if string == filtered_string:
-            break
-        else:
-            string = filtered_string
-
-    while True:
-        filtered_string = re.sub('set passwd ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
-        if string == filtered_string:
-            break
-        else:
-            string = filtered_string
-
-    while True:
-        filtered_string = re.sub('set private-key.*?-----END ENCRYPTED PRIVATE KEY-----"',
-                               '',
+        filtered_string = re.sub('set password ENC.*?==',
+                                 '',
                                  string,
                                  flags=re.MULTILINE | re.DOTALL)
         if string == filtered_string:
@@ -644,8 +636,30 @@ def remove_sensitive_data(string):
             string = filtered_string
 
     while True:
-        filtered_string = re.sub('set certificate.*?-----END CERTIFICATE-----"',
-                               '',
+        filtered_string = re.sub('set passwd ENC.*?==',
+                                 '',
+                                 string,
+                                 flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set private-key.*?'
+                                 '-----END ENCRYPTED PRIVATE KEY-----"',
+                                 '',
+                                 string,
+                                 flags=re.MULTILINE | re.DOTALL)
+        if string == filtered_string:
+            break
+        else:
+            string = filtered_string
+
+    while True:
+        filtered_string = re.sub('set certificate.*?'
+                                 '-----END CERTIFICATE-----"',
+                                 '',
                                  string,
                                  flags=re.MULTILINE | re.DOTALL)
         if string == filtered_string:
@@ -682,7 +696,7 @@ def check_diff(data):
     parameters = {'scope': 'global'}
 
     resp = fos.download('system/config',
-                       'backup'+ remote_filename,
+                        'backup' + remote_filename,
                         vdom=data['vdom'],
                         parameters=parameters)
     fos.logout()
@@ -690,13 +704,17 @@ def check_diff(data):
     if resp.status_code == 200:
 
         filtered_remote_config_file = remove_sensitive_data(resp.content)
-        filtered_local_config_file = remove_sensitive_data(open(data['config_parameters']['filename'], 'r').read())
+        filtered_local_config_file = remove_sensitive_data(
+            open(data['config_parameters']['filename'], 'r').read())
 
         remote_config_file = filtered_remote_config_file.strip().splitlines()
         local_config_file = filtered_local_config_file.strip().splitlines()
 
         differences = ""
-        for line in difflib.unified_diff(local_config_file, remote_config_file, fromfile='local', tofile='fortigate',
+        for line in difflib.unified_diff(local_config_file,
+                                         remote_config_file,
+                                         fromfile='local',
+                                         tofile='fortigate',
                                          lineterm=''):
             differences += line+'\n'
 
@@ -720,8 +738,8 @@ def fortigate_config_backup(data):
 
     functions = data['config'].split()
 
-    parameters = { 'destination':'file',
-                   'scope':'global'}
+    parameters = {'destination': 'file',
+                  'scope': 'global'}
 
     resp = fos.monitor(functions[0]+'/'+functions[1],
                        functions[2],
@@ -729,14 +747,12 @@ def fortigate_config_backup(data):
                        parameters=parameters)
 
     if resp['status'] != 'success':
-        return True, False, {
-            'status': resp['status'],
-            'version': resp['version'],
-            'results': resp['results']
-            }
+        return True, False, {'status': resp['status'],
+                             'version': resp['version'],
+                             'results': resp['results']}
 
     remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
-    parameters = { 'scope':'global' }
+    parameters = {'scope': 'global'}
 
     resp = fos.download(functions[0]+'/'+functions[1],
                         functions[2]+remote_filename,
@@ -746,13 +762,13 @@ def fortigate_config_backup(data):
 
     if resp.status_code == 200:
 
-        file = open(data['config_parameters']['filename'],'w')
+        file = open(data['config_parameters']['filename'], 'w')
         file.write(resp.content)
         file.close()
         return False, False, {
             'status': resp.status_code,
             'version': fos.get_version(),
-            'backup' : resp.content
+            'backup': resp.content
             }
     else:
         return True, False, {
@@ -767,32 +783,31 @@ def fortigate_config_restore(data):
     password = data['password']
     fos.login(host, username, password)
 
-    if data['diff'] == True:
+    if data['diff']:
         return check_diff(data)
 
     functions = data['config'].split()
 
-    parameters = { 'global':'1' }
-    upload_data = {'source':'upload', 'scope':'global'}
-    files = {'file': ('backup_data', open(data['config_parameters']['filename'], 'r'), 'text/plain')}
+    parameters = {'global': '1'}
+    upload_data = {'source': 'upload', 'scope': 'global'}
+    files = {'file': ('backup_data',
+                      open(data['config_parameters']['filename'], 'r'),
+                      'text/plain')}
 
-    resp = fos.upload(functions[0]+'/'+functions[1],functions[2],
-                             data=upload_data,
-                             parameters=parameters,
-                             files=files )
+    resp = fos.upload(functions[0]+'/'+functions[1],
+                      functions[2],
+                      data=upload_data,
+                      parameters=parameters,
+                      files=files)
 
     if resp.status_code == 200:
-        return False, True, {
-            'status': resp.status_code,
-            'version': fos.get_version(),
-            'result' : resp.content
-            }
+        return False, True, {'status': resp.status_code,
+                             'version': fos.get_version(),
+                             'result': resp.content}
     else:
-        return True, False, {
-            'status': resp.status_code,
-            'version': fos.get_version(),
-            'result': resp.content
-            }
+        return True, False, {'status': resp.status_code,
+                             'version': fos.get_version(),
+                             'result': resp.content}
 
 
 def main():
@@ -802,13 +817,15 @@ def main():
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
-        "config": {"required": False, "choices": AVAILABLE_CONF, "type": "str"},
+        "config": {"required": False,
+                   "choices": AVAILABLE_CONF,
+                   "type": "str"},
         "mkey": {"required": False, "type": "str"},
         "action": {
             "default": "set",
             "choices": ['set', 'delete', 'put',
                         'post', 'get', 'monitor',
-                        'ssh','backup','restore'],
+                        'ssh', 'backup', 'restore'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
@@ -835,7 +852,9 @@ def main():
 
     if not is_error:
         if (module._diff):
-            module.exit_json(changed=has_changed, meta=result, diff={'prepared': result['diff']})
+            module.exit_json(changed=has_changed,
+                             meta=result,
+                             diff={'prepared': result['diff']})
         else:
             module.exit_json(changed=has_changed, meta=result)
     else:

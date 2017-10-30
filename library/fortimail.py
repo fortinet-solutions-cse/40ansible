@@ -30,6 +30,9 @@ import sys
 import pprint
 import socket, paramiko
 
+ANSIBLE_METADATA = {'status': ['preview'],
+                    'supported_by': 'community',
+                    'metadata_version': '1.1'}
 
 DOCUMENTATION = '''
 ---
