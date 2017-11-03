@@ -4,7 +4,7 @@
     username: "admin"
     password: ""
   tasks:
-  - name: Get domain
+  - name: Get system usage
     fortimailconfig:
       action: "get"
       host:  "{{ host }}"
