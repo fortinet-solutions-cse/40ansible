@@ -1,0 +1,13 @@
+- hosts: localhost
+  vars:
+    host: "192.168.122.50"
+    username: "admin"
+    password: ""
+  tasks:
+  - name: Get domain
+    fortimailconfig:
+      action: "get"
+      host:  "{{ host }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      resource: "SysStatusUsage"
