@@ -82,7 +82,7 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
 AVAILABLE_CONF = [
-    'system resource',
+    'system resource usage',
     'system vdom-resource',
     'alertemail setting',
     'antivirus heuristic',
@@ -448,6 +448,15 @@ def get(name, action=None, mkey=None, parameters=None):
     return json.loads(fos.get('cmdb', name, action, mkey, parameters))
 
 
+def extract_path_and_name(url_segment_list):
+    
+    if len(url_segment_list) < 2:
+        raise AssertionError('List should have a minimum of two items')
+    path = '/'.join(url_segment_list[0:-1])
+    name = url_segment_list[-1]
+    return path, name
+
+
 def login(data):
     host = data['host']
     username = data['username']
@@ -563,7 +572,10 @@ def fortigate_config_monitor(data):
     fos.login(host, username, password)
 
     functions = data['config'].split()
-    resp = fos.monitor(functions[0], functions[1], vdom=data['vdom'])
+    
+    path, name = extract_path_and_name(functions)
+    
+    resp = fos.monitor(path, name, vdom=data['vdom'])
     fos.logout()
 
     if resp['status'] == "success":
