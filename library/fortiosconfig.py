@@ -19,7 +19,7 @@
 
 # the lib use python logging can get it if the following is set in your
 # Ansible config.
-# log_path = /var/log/ansible.log in your conf..
+# log_path = /var/tmp/ansible.log in your conf..
 
 from ansible.module_utils.basic import *
 from fortiosapi import FortiOSAPI
@@ -841,12 +841,19 @@ def main():
 
     module = AnsibleModule(argument_spec=fields,
                            supports_check_mode=False)
-    module.params['diff'] = module._diff
+
+    module.params['diff'] = False
+    try:
+        module.params['diff'] = module._diff
+    except:
+        logger.warning("Diff mode is only available on Ansible 2.1 and later versions")
+        pass
+
     is_error, has_changed, result = choice_map.get(
         module.params['action'])(module.params)
 
     if not is_error:
-        if (module._diff):
+        if module.params['diff']:
             module.exit_json(changed=has_changed, meta=result, diff={'prepared': result['diff']})
         else:
             module.exit_json(changed=has_changed, meta=result)
