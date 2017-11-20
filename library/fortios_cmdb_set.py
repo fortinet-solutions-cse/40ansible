@@ -32,14 +32,45 @@ ANSIBLE_METADATA = {'status': ['preview'],
 
 DOCUMENTATION = '''
 ---
-module: fortiosconfig
+module: fortios_rest_api
 short_description: Module to configure all aspects of \
 fortinet products using the REST API
+version_added: "1.2"
+author: "Nicolas Thomas (nthomas@fortinet.com)"
+notes:
+    - "Requires fortiosapi library developped by Fortinet"
+    - "Run as a local_action in your playbook"
+requirements:
+    - fortiosapi
+options:
+    host:
+        description:
+            - Fortios or fortigate IP adress
+        required: true
+        default: null
+        choices: []
+        aliases: []
+    username:
+        description:
+            - Fortios or fortigate username
+        required: true
+        default: null
+        choices: []
+        aliases: []
+    password:
+        "host": {"required": True, "type": "str"},
+        "password": {"required": False, "type": "str"},
+        "vdom": {"required": False, "type": "str", "default": "root"},
+        "endpoint": {"required": True,
+                   "choices": AVAILABLE_CONF,
+                   "type": "str"},
+        "mkey": {"required": False, "type": "str"},
+        "config_parameters": {"required": True, "type": "dict"},
+
 '''
 
 EXAMPLES = '''
 - hosts: localhost
-  strategy: debug
   vars:
    host: "192.168.40.8"
    username: "admin"
@@ -47,30 +78,38 @@ EXAMPLES = '''
    vdom: "root"
   tasks:
   - name: Set static route on the fortigate
-    fortiosconfig:
-     action: "set"
+    fortios_cmdb_set:
      host:  "{{  host }}"
      username: "{{  username}}"
      password: "{{ password }}"
      vdom:  "{{  vdom }}"
-     config: "router static"
+     endpoint: "router static"
      config_parameters:
        seq-num: "8"
        dst: "10.10.32.0 255.255.255.0"
        device: "port2"
        gateway: "192.168.40.252"
-  - name: Delete firewall address
-    fortiosconfig:
-     config: "firewall address"
-     action: "delete"
-     host:  "{{ host }}"
-     username: "{{ username }}"
-     password: "{{ password }}"
+  - name:   firewall policy
+    fortios_cmdb_set:
+     endpoint: "firewall policy"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"  
      vdom:  "{{  vdom }}"
      config_parameters:
-       wildcard-fqdn: "*.test.ansible.com"
-       name: "test-ansible"
-       type: "wildcard-fqdn"
+        policyid: "66"
+        name: "ansible"
+        json:
+          policyid: "66"
+          name: "ansible"
+          action: "accept"
+          srcintf: [ {"name": "port1"} ] 
+          dstintf: [{"name":"port2"} ] 
+          srcaddr: [{"name":"all"} ] 
+          dstaddr: [{"name":"all"}] 
+          schedule: "always" 
+          service:  [{"name":"HTTPS"}] 
+          logtraffic: "all"  
 '''
 
 fos = FortiOSAPI()
@@ -460,61 +499,13 @@ def logout():
     fos.logout()
 
 
-def fortigate_config_put(data):
+def fortios_cmdb_set(data):
     host = data['host']
     username = data['username']
     password = data['password']
     fos.login(host, username, password)
 
-    functions = data['config'].split()
-
-    schema = fos.schema(functions[0], functions[1])
-    dataconf = data['config_parameters']
-
-    mkey = None
-    if schema and ('mkey' in schema):
-        keyname = schema['mkey']
-        if dataconf and (keyname in dataconf):
-            mkey = dataconf[keyname]
-
-    resp = fos.put(functions[0], functions[1], vdom=data['vdom'],
-                   mkey=mkey, data=data['config_parameters'])
-
-    fos.logout()
-
-    meta = {"status": resp['status'], 'version': resp['version'], }
-    if resp['status'] == "success":
-        return False, True, meta
-    else:
-        return True, False, meta
-
-
-def fortigate_config_post(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
-
-    functions = data['config'].split()
-
-    resp = fos.post(functions[0], functions[1], vdom=data['vdom'],
-                    data=data['config_parameters'])
-    fos.logout()
-
-    meta = {"status": resp['status'], 'version': resp['version'], }
-    if resp['status'] == "success":
-        return False, True, meta
-    else:
-        return True, False, meta
-
-
-def fortigate_config_set(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
-
-    functions = data['config'].split()
+    functions = data['endpoint'].split()
 
     resp = fos.set(functions[0], functions[1], vdom=data['vdom'],
                    data=data['config_parameters'])
@@ -527,333 +518,31 @@ def fortigate_config_set(data):
         return True, False, meta
 
 
-def fortigate_config_get(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
-
-    functions = data['config'].split()
-    schema = fos.schema(functions[0], functions[1])
-    dataconf = data['config_parameters']
-
-    mkey = None
-    if schema and ('mkey' in schema):
-        keyname = schema['mkey']
-        if dataconf and (keyname in dataconf):
-            mkey = dataconf[keyname]
-
-    resp = fos.get(functions[0], functions[1], mkey=mkey, vdom=data['vdom'])
-    fos.logout()
-
-    if resp['status'] == "success":
-        return False, False, {
-            "status": resp['status'],
-            'version': resp['version'], 'results': resp['results']
-            }
-    else:
-        return True, False, {
-            "status": resp['status'], 'version': resp['version']
-            }
-
-
-def fortigate_config_monitor(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
-
-    functions = data['config'].split()
-    resp = fos.monitor(functions[0], functions[1], vdom=data['vdom'])
-    fos.logout()
-
-    if resp['status'] == "success":
-        return False, False, {
-            "status": resp['status'], 'version': resp['version'],
-            'results': resp['results']}
-    else:
-        return True, False, {
-            "status": resp['status'], 'version': resp['version']}
-
-
-def fortigate_config_del(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    vdom = data['vdom']
-    fos.login(host, username, password)
-
-    functions = data['config'].split()
-    schema = fos.schema(functions[0], functions[1])
-    keyname = schema['mkey']
-    dataconf = data['config_parameters']
-    mkey = dataconf[keyname]
-
-    resp = fos.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
-    fos.logout()
-
-    meta = {"status": resp['status'], 'version': resp['version'], }
-
-    if resp['status'] == "success":
-        return False, True, meta
-    else:
-        if resp['reason'] == "Not Found":
-            return False, False, meta
-        else:
-            return True, False, meta
-
-
-def fortigate_config_ssh(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    vdom = data['vdom']
-    cmds = data['commands']
-
-    try:
-        out, err = fos.ssh(cmds, host, username, password=password)
-        meta = {"out": out, "err": err, }
-        return False, True, meta
-    except:
-        return True,\
-            False,\
-            {"out": "n/a", "err": "at least one cmd returned an error"}
-
-
-def remove_sensitive_data(string):
-
-    while True:
-        filtered_string = re.sub('set password ENC.*?==',
-                                 '',
-                                 string,
-                                 flags=re.MULTILINE | re.DOTALL)
-        if string == filtered_string:
-            break
-        else:
-            string = filtered_string
-
-    while True:
-        filtered_string = re.sub('set passwd ENC.*?==',
-                                 '',
-                                 string,
-                                 flags=re.MULTILINE | re.DOTALL)
-        if string == filtered_string:
-            break
-        else:
-            string = filtered_string
-
-    while True:
-        filtered_string = re.sub('set private-key.*?'
-                                 '-----END ENCRYPTED PRIVATE KEY-----"',
-                                 '',
-                                 string,
-                                 flags=re.MULTILINE | re.DOTALL)
-        if string == filtered_string:
-            break
-        else:
-            string = filtered_string
-
-    while True:
-        filtered_string = re.sub('set certificate.*?'
-                                 '-----END CERTIFICATE-----"',
-                                 '',
-                                 string,
-                                 flags=re.MULTILINE | re.DOTALL)
-        if string == filtered_string:
-            break
-        else:
-            string = filtered_string
-
-    return filtered_string
-
-
-def check_diff(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-
-    fos.login(host, username, password)
-
-    parameters = {'destination': 'file',
-                  'scope': 'global'}
-
-    resp = fos.monitor('system/config',
-                       'backup',
-                       vdom=data['vdom'],
-                       parameters=parameters)
-
-    if resp['status'] != 'success':
-        return True, False, {
-            'status': resp['status'],
-            'version': resp['version'],
-            'results': resp['results']
-        }
-
-    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
-    parameters = {'scope': 'global'}
-
-    resp = fos.download('system/config',
-                        'backup' + remote_filename,
-                        vdom=data['vdom'],
-                        parameters=parameters)
-    fos.logout()
-
-    if resp.status_code == 200:
-
-        filtered_remote_config_file = remove_sensitive_data(resp.content)
-        filtered_local_config_file = remove_sensitive_data(
-            open(data['config_parameters']['filename'], 'r').read())
-
-        remote_config_file = filtered_remote_config_file.strip().splitlines()
-        local_config_file = filtered_local_config_file.strip().splitlines()
-
-        differences = ""
-        for line in difflib.unified_diff(local_config_file,
-                                         remote_config_file,
-                                         fromfile='local',
-                                         tofile='fortigate',
-                                         lineterm=''):
-            differences += line+'\n'
-
-        return False, True, {
-            'status': resp.status_code,
-            'version': fos.get_version(),
-            'diff': differences
-        }
-    else:
-        return True, False, {
-            'status': resp.status_code,
-            'version': fos.get_version()
-        }
-
-
-def fortigate_config_backup(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
-
-    functions = data['config'].split()
-
-    parameters = {'destination': 'file',
-                  'scope': 'global'}
-
-    resp = fos.monitor(functions[0]+'/'+functions[1],
-                       functions[2],
-                       vdom=data['vdom'],
-                       parameters=parameters)
-
-    if resp['status'] != 'success':
-        return True, False, {'status': resp['status'],
-                             'version': resp['version'],
-                             'results': resp['results']}
-
-    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
-    parameters = {'scope': 'global'}
-
-    resp = fos.download(functions[0]+'/'+functions[1],
-                        functions[2]+remote_filename,
-                        vdom=data['vdom'],
-                        parameters=parameters)
-    fos.logout()
-
-    if resp.status_code == 200:
-
-        file = open(data['config_parameters']['filename'], 'w')
-        file.write(resp.content)
-        file.close()
-        return False, False, {
-            'status': resp.status_code,
-            'version': fos.get_version(),
-            'backup': resp.content
-            }
-    else:
-        return True, False, {
-            'status': resp.status_code,
-            'version': fos.get_version()
-            }
-
-
-def fortigate_config_restore(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
-
-    if data['diff']:
-        return check_diff(data)
-
-    functions = data['config'].split()
-
-    parameters = {'global': '1'}
-    upload_data = {'source': 'upload', 'scope': 'global'}
-    files = {'file': ('backup_data',
-                      open(data['config_parameters']['filename'], 'r'),
-                      'text/plain')}
-
-    resp = fos.upload(functions[0]+'/'+functions[1],
-                      functions[2],
-                      data=upload_data,
-                      parameters=parameters,
-                      files=files)
-
-    if resp.status_code == 200:
-        return False, True, {'status': resp.status_code,
-                             'version': fos.get_version(),
-                             'result': resp.content}
-    else:
-        return True, False, {'status': resp.status_code,
-                             'version': fos.get_version(),
-                             'result': resp.content}
-
-
 def main():
     fields = {
         "host": {"required": True, "type": "str"},
         "password": {"required": False, "type": "str"},
         "username": {"required": True, "type": "str"},
-        "description": {"required": False, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
-        "config": {"required": False,
-                   "choices": AVAILABLE_CONF,
-                   "type": "str"},
+        "endpoint": {"required": True,
+                     "choices": AVAILABLE_CONF,
+                     "type": "str"},
         "mkey": {"required": False, "type": "str"},
-        "action": {
-            "default": "set",
-            "choices": ['set', 'delete', 'put',
-                        'post', 'get', 'monitor',
-                        'ssh', 'backup', 'restore'],
-            "type": 'str'
-        },
-        "config_parameters": {"required": False, "type": "dict"},
-        "commands": {"required": False, "type": "str"}
-    }
-
-    choice_map = {
-        "set": fortigate_config_set,
-        "delete": fortigate_config_del,
-        "put": fortigate_config_put,
-        "post": fortigate_config_post,
-        "get": fortigate_config_get,
-        "monitor": fortigate_config_monitor,
-        "ssh": fortigate_config_ssh,
-        "backup": fortigate_config_backup,
-        "restore": fortigate_config_restore
+        "config_parameters": {"required": True, "type": "dict"},
     }
 
     module = AnsibleModule(argument_spec=fields,
                            supports_check_mode=False)
-    module.params['diff'] = module._diff
-    is_error, has_changed, result = choice_map.get(
-        module.params['action'])(module.params)
+    #module.params['diff'] = module._diff
+    is_error, has_changed, result = fortios_cmdb_set(module.params)
 
     if not is_error:
-        if (module._diff):
-            module.exit_json(changed=has_changed,
-                             meta=result,
-                             diff={'prepared': result['diff']})
-        else:
-            module.exit_json(changed=has_changed, meta=result)
+        # if (module._diff):
+        #    module.exit_json(changed=has_changed,
+        #                     meta=result,
+        #                     diff={'prepared': result['diff']})
+        # else:
+        module.exit_json(changed=has_changed, meta=result)
     else:
         module.fail_json(msg="Error in repo", meta=result)
 
