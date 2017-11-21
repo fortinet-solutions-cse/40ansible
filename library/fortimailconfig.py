@@ -63,6 +63,8 @@ def login(data):
     host = data['host']
     username = data['username']
     fml.debug('on')
+    if 'force_https' in data and data['force_https']:
+        fml.https('on')
     fml.login(host, username, '')
 
 
@@ -70,6 +72,8 @@ def fortimail_config_put(data):
     host = data['host']
     username = data['username']
     password = data['password']
+    if 'force_https' in data and data['force_https']:
+        fml.https('on')
     fml.login(host, username, password)
 
     resp = fml.put(data['resource'],
@@ -86,6 +90,8 @@ def fortimail_config_post(data):
     host = data['host']
     username = data['username']
     password = data['password']
+    if 'force_https' in data and data['force_https']:
+        fml.https('on')
     fml.login(host, username, password)
 
     resp = fml.post(data['resource'],
@@ -102,6 +108,8 @@ def fortimail_config_del(data):
     host = data['host']
     username = data['username']
     password = data['password']
+    if 'force_https' in data and data['force_https']:
+        fml.https('on')
     fml.login(host, username, password)
 
     resp = fml.delete(data['resource'],
@@ -120,6 +128,8 @@ def fortimail_config_get(data):
     host = data['host']
     username = data['username']
     password = data['password']
+    if 'force_https' in data and data['force_https']:
+        fml.https('on')
     fml.login(host, username, password)
 
     resp = fml.get(data['resource'],
@@ -138,6 +148,7 @@ def main():
         "password": {"required": False, "type": "str"},
         "domain": {"required": False, "type": "str"},
         "resource": {"required": False, "type": "str", "default": ""},
+        "force_https": {"required": False, "type": "bool", "default": False},
         "action": {
             "default": "get",
             "choices": ['delete', 'put', 'post', 'get'],
