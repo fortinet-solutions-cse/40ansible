@@ -64,7 +64,6 @@ options:
                    "type": "str"},
         "mkey": {"required": False, "type": "str"},
         "config_parameters": {"required": True, "type": "dict"},
-
 '''
 
 EXAMPLES = '''
@@ -90,9 +89,9 @@ EXAMPLES = '''
   - name:   firewall policy
     fortios_cmdb_set:
      endpoint: "firewall policy"
-     host:  "{{ host }}"  
-     username: "{{ username }}"  
-     password: "{{ password }}"  
+     host: "{{ host }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
      vdom:  "{{  vdom }}"
      config_parameters:
         policyid: "66"
@@ -101,13 +100,13 @@ EXAMPLES = '''
           policyid: "66"
           name: "ansible"
           action: "accept"
-          srcintf: [ {"name": "port1"} ] 
-          dstintf: [{"name":"port2"} ] 
-          srcaddr: [{"name":"all"} ] 
-          dstaddr: [{"name":"all"}] 
-          schedule: "always" 
-          service:  [{"name":"HTTPS"}] 
-          logtraffic: "all"  
+          srcintf: [ {"name": "port1"} ]
+          dstintf: [{"name":"port2"} ]
+          srcaddr: [{"name":"all"} ]
+          dstaddr: [{"name":"all"}]
+          schedule: "always"
+          service:  [{"name":"HTTPS"}]
+          logtraffic: "all"
 '''
 
 fos = FortiOSAPI()
