@@ -23,8 +23,6 @@ from fortiosapi import FortiOSAPI
 import json
 from argparse import Namespace
 import logging
-import difflib
-import re
 
 ANSIBLE_METADATA = {'status': ['preview'],
                     'supported_by': 'community',
@@ -533,15 +531,9 @@ def main():
 
     module = AnsibleModule(argument_spec=fields,
                            supports_check_mode=False)
-    #module.params['diff'] = module._diff
     is_error, has_changed, result = fortios_cmdb_set(module.params)
 
     if not is_error:
-        # if (module._diff):
-        #    module.exit_json(changed=has_changed,
-        #                     meta=result,
-        #                     diff={'prepared': result['diff']})
-        # else:
         module.exit_json(changed=has_changed, meta=result)
     else:
         module.fail_json(msg="Error in repo", meta=result)
