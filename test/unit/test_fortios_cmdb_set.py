@@ -1,7 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright 2017 Fortinet, Inc.
 #
-# Author: Miguel Angel Munoz (magonzalez at fortinet.com)
+# Author: Miguel Angel Munoz (magonzalez at fortinet.com) and 
+#         Nicolas Thomas (nthomas at fortinet.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,48 +18,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-import library.fortios_cmdb_set as sut
-import ansible.module_utils.basic
 import sys
+from nose.plugins.skip import SkipTest
+
+if sys.version_info < (2, 7):
+    raise SkipTest("Python >= 2.7 is required for running unit tests")
+
+try:
+    import library.fortios_cmdb_set as sut
+except ImportError:
+    try:
+        import ansible.modules.network.fortios.fortios_cmdb_set as sut
+    except ImportError:
+        raise SkipTest("FortiOS Ansible module not found")
+
+try:
+    from fortiosapi import FortiOSAPI
+except ImportError:
+    raise SkipTest("FortiOS Ansible module requires FortiOSapi")
+
+import ansible.module_utils.basic
 import requests
-from fortiosapi import FortiOSAPI
-
-
-def test_main_module(monkeypatch):
-    def cmd_arguments():
-        argv = ['fortios_cmdb_set.py',
-                '{ '
-                '"ANSIBLE_MODULE_ARGS": { '
-                '"host": "192.168.122.40", '
-                '"username": "admin", '
-                '"password": "", '
-                '"vdom": "global", '
-                '"endpoint": "router static", '
-                '"config_parameters":'
-                ' { '
-                '"seq-num": "8", '
-                '"dst": "10.10.32.0 255.255.255.0",'
-                '"device": "port2",'
-                '"gateway": "192.168.40.252" '
-                '}'
-                '} '
-                '} ']
-        return argv
-
-    def set(self, path, name, vdom=None,
-            mkey=None, parameters=None, data=None):
-        return {'status': 'success', 'version': '5.6.2'}
-
-    monkeypatch.setattr(sys, 'argv', cmd_arguments())
-    monkeypatch.setattr(sys, 'exit', lambda x: True)
-    monkeypatch.setattr(FortiOSAPI,
-                        'login',
-                        lambda self, host, username, password: True)
-    monkeypatch.setattr(FortiOSAPI, 'set', set)
-    monkeypatch.setattr(FortiOSAPI, 'logout', lambda _: True)
-
-    sut.main()
 
 
 def test_cmdb_set(monkeypatch):
@@ -203,8 +184,8 @@ def test_endpoint_properly_built(monkeypatch):
 
     def post(self, url, data=None, json=None, **kwargs):
         if url != 'https://192.168.122.40/logincheck' and \
-                        url != 'https://192.168.122.40/api/v2/cmdb/' \
-                               'firewall/policy?global=1':
+                url != 'https://192.168.122.40/api/v2/cmdb/' \
+                       'firewall/policy?global=1':
             assert False, "Url not properly built: %s" % url
         result = Result()
         result.calculate_result()
@@ -243,7 +224,7 @@ def test_failed_login(monkeypatch):
     monkeypatch.setattr(FortiOSAPI, 'logout', lambda _: True)
 
     try:
-        _, _, _ = sut.fortios_cmdb_set(
+        sut.fortios_cmdb_set(
             {"host": "192.168.122.40",
              "username": "admin",
              "password": "",
