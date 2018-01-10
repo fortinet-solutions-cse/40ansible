@@ -1,6 +1,17 @@
 #!/bin/bash
 
 #************************************************
+#
+# Use this script to start a FortiGate VM with
+# LibVirt, no VIM required.
+# This has support for cloud init, see below how
+# to build cdrom with proper content
+#
+# Miguel Angel Muñoz <magonzalez at fortinet.com>
+#
+# ************************************************
+
+#************************************************
 # Check Fortigate VM existence
 #************************************************
 

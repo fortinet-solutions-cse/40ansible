@@ -1,6 +1,14 @@
 #!/bin/bash
-# Use this script to start a FortiMail VM with LibVirt, no VIM required.
-# This has support for
+#************************************************
+#
+# Use this script to start a FortiMail VM with
+# LibVirt, no VIM required.
+# This has support for cloud init, see below how
+# to build cdrom with proper content
+#
+# Miguel Angel Muñoz <magonzalez at fortinet.com>
+#
+# ************************************************
 
 #************************************************
 # Check FortiMail VM existence
