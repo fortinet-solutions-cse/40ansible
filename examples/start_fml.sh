@@ -1,4 +1,6 @@
 #!/bin/bash
+# Use this script to start a FortiMail VM with LibVirt, no VIM required.
+# This has support for
 
 #************************************************
 # Check FortiMail VM existence
@@ -43,20 +45,31 @@ cp ${AuxDisk_QCOW2} ./aux_disk.qcow2
 mkdir -p cfg-drv-fgt/openstack/latest/
 mkdir -p cfg-drv-fgt/openstack/content/
 
-
-#Cloud Init not fully working yet
-cat >cfg-drv-fgt/openstack/content/0000 <<EOF
------BEGIN FGT VM LICENSE-----
-<empty> Put your license here
------END FGT VM LICENSE-----
+cat >cfg-drv-fgt/openstack/latest/user_data <<EOF
 EOF
 
-cat >cfg-drv-fgt/openstack/latest/user_data <<EOF
+cat >cfg-drv-fgt/openstack/latest/meta_data.json <<EOF
+{
+    "files": [
+        {"path": "mode", "content_path": "/content/0000"},
+        {"path": "config", "content_path": "/content/0001"},
+        {"path": "license", "content_path": "/content/0002"}
+    ]
+}
+EOF
+
+cat >cfg-drv-fgt/openstack/content/0000 <<EOF
+config system global
+  set operation-mode server
+end
+EOF
+
+cat >cfg-drv-fgt/openstack/content/0001 <<EOF
 config system interface
-edit "port1"
-set ip 192.168.122.50/24
-set allowaccess ping ssh snmp http https telnet
-next
+  edit "port1"
+    set ip 192.168.122.50/24
+    set allowaccess ping ssh snmp http https telnet
+  next
 end
 
 config system global
@@ -67,11 +80,24 @@ config system global
    set pki-mode enable
 end
 
+config system route
+  edit 1
+    set gateway 192.168.122.1
+  next
+end
+
 config system dns
     set primary 8.8.8.8
     set secondary 8.8.4.4
 end
 EOF
+
+cat >cfg-drv-fgt/openstack/content/0002 <<EOF
+-----BEGIN FE VM LICENSE-----
+Put your license here
+-----END FE VM LICENSE-----
+EOF
+
 aux_name=$(basename $AuxDisk_QCOW2)
 
 sudo mkisofs -publisher "OpenStack Nova 12.0.2" -J -R -V config-2 -o ${SF2_NAME}-cidata.iso cfg-drv-fgt
