@@ -116,3 +116,11 @@ virt-install --connect qemu:///system --noautoconsole --filesystem ${PWD},shared
 # sudo apt-get install -y swaks
 # swaks -f a@agmail.com -t a@a.com -s 172.21.6.159
 # while true; do sleep 1; swaks -f a@agmail.com -t a@a.com -s 172.21.6.159; done
+
+
+#Deploy FortiMail in openstack: Note mode, config and license files (take examples from above)
+# openstack server create --image "fortimail" --key-name t1 --flavor fortimail-flv \
+#  --nic net-id=mgmt  --block-device-mapping sdb=t1 --block-device-mapping sdc=t2  \
+#  --file mode=./mode --file config=./config --file license=./license   --config-drive True FortiMailVM
+
+
