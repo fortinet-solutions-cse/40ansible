@@ -1,0 +1,20 @@
+{
+  "ANSIBLE_MODULE_ARGS": {
+    "webfilter_url": {
+      "urlfilter_id": "2",
+      "id":"341",
+      "url": "www.test345.com",
+      "type": "simple",
+      "action": "exempt",
+      "status": "enable",
+      "exempt": "pass",
+      "web-proxy-profile": "",
+      "referrer-host": "",
+      "state": "present"
+    },
+    "host": "192.168.122.40",
+    "password": "",
+    "username": "admin",
+    "vdom": "global"
+  }
+}
