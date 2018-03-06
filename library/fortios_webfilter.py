@@ -103,10 +103,7 @@ options:
         status: "enable"
         lang: "western"
         score: 150
-        action: block        
-        
-
-
+        action: block
 '''
 
 EXAMPLES = '''
@@ -153,7 +150,8 @@ EXAMPLES = '''
         status: "enable"
         lang: "western"
         score: 150
-        action: block
+        action: "block"
+        state: "present"
        
 '''
 
@@ -182,6 +180,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 fos = None
 
+
 def login(data):
     host = data['host']
     username = data['username']
@@ -197,33 +196,65 @@ def logout():
     fos.logout()
 
 
+def extract_wf_url_data(json):
+
+    dict = {}
+    attr_list = ['id', 'url', 'type',
+                 'action', 'status',
+                 'exempt', 'web-proxy-profile',
+                 'referrer-host']
+
+    for attribute in attr_list:
+        if attribute in json:
+            dict[attribute] = json[attribute]
+
+    return dict
+
+
+def webfilter_url(data):
+
+    vdom = data['vdom']
+    wf_url_data = data['webfilter_url']
+    url_data = extract_wf_url_data(wf_url_data)
+
+    if wf_url_data['state'] == "present":
+        return fos.set('webfilter/urlfilter/' + str(wf_url_data['urlfilter_id']),
+                'entries',
+                data=url_data,
+                vdom=vdom)
+
+
+def webfilter_content(data):
+    return ""
+
+
+def webfilter_profile(data):
+    return ""
+
+
 def fortios_webfilter(data):
     host = data['host']
     username = data['username']
     password = data['password']
-
     fos.https('off')
     fos.login(host, username, password)
 
-    #functions = data['endpoint'].split()
+    methodlist = ['webfilter_url', 'webfilter_content', 'webfilter_profile']
+    for method in methodlist:
+        if data[method]:
+            resp = eval(method)(data)
+            break
 
-    # resp = fos.set(functions[0],
-    #                functions[1],
-    #                vdom=data['vdom'],
-    #                mkey=data['mkey'] if 'mkey' in data else None,
-    #                data=data['webfilter_url'] if 'webfilter_url' in data else None)
     fos.logout()
-
-    resp = {'status':'success', 'version':'5.6.3'}
-    meta = {"status": resp['status'], 'version': resp['version'], }
+#    resp = {'status': 'success', 'version': '5.6.3'}
+#    meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
-        return False, True, meta
+        return False, True, resp
     else:
-        return True, False, meta
+        return True, False, resp
 
 
 def main():
-
     fields = {
         "host": {"required": True, "type": "str"},
         "password": {"required": False, "type": "str"},
@@ -231,6 +262,7 @@ def main():
         "vdom": {"required": False, "type": "str", "default": "root"},
         "webfilter_url": {"required": False, "type": "dict"},
         "webfilter_content": {"required": False, "type": "dict"},
+        "webfilter_profile": {"required": False, "type": "dict"}
     }
 
     module = AnsibleModule(argument_spec=fields,

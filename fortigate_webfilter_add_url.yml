@@ -1,0 +1,24 @@
+- hosts: localhost
+  vars:
+   host: "192.168.122.40"
+   username: "admin"
+   password: ""
+   vdom: "root"
+  tasks:
+  - name: Configure url to be filtered by fortigate
+    fortios_webfilter:
+      host:  "{{  host }}"
+      username: "{{  username}}"
+      password: "{{ password }}"
+      vdom:  "{{  vdom }}"
+      webfilter_url:
+        urlfilter_id: "1"
+        id: "1"
+        url: "www.test45.com"
+        type: "simple"
+        action: "exempt"
+        status: "enable"
+        exempt: "pass"
+        web-proxy-profile: ""
+        referrrer-host: ""
+        state: "present"
