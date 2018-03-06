@@ -196,13 +196,12 @@ def logout():
     fos.logout()
 
 
-def extract_wf_url_data(json):
-
-    dict = {}
+def filter_wf_url_data(json):
     attr_list = ['id', 'url', 'type',
                  'action', 'status',
                  'exempt', 'web-proxy-profile',
                  'referrer-host']
+    dict = {}
 
     for attribute in attr_list:
         if attribute in json:
@@ -212,16 +211,21 @@ def extract_wf_url_data(json):
 
 
 def webfilter_url(data):
-
     vdom = data['vdom']
     wf_url_data = data['webfilter_url']
-    url_data = extract_wf_url_data(wf_url_data)
+    url_data = filter_wf_url_data(wf_url_data)
 
     if wf_url_data['state'] == "present":
         return fos.set('webfilter/urlfilter/' + str(wf_url_data['urlfilter_id']),
-                'entries',
-                data=url_data,
-                vdom=vdom)
+                       'entries',
+                       data=url_data,
+                       vdom=vdom)
+
+    elif wf_url_data['state'] == "absent":
+        return fos.delete('webfilter/urlfilter/' + str(wf_url_data['urlfilter_id']),
+                          '/entries/',
+                          mkey=url_data['id'],
+                          vdom=vdom)
 
 
 def webfilter_content(data):
@@ -246,12 +250,7 @@ def fortios_webfilter(data):
             break
 
     fos.logout()
-#    resp = {'status': 'success', 'version': '5.6.3'}
-#    meta = {"status": resp['status'], 'version': resp['version'], }
-    if resp['status'] == "success":
-        return False, True, resp
-    else:
-        return True, False, resp
+    return not resp['status'] == "success", resp['status'] == "success", resp
 
 
 def main():
