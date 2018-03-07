@@ -1,0 +1,7 @@
+# Main playbook
+# Calls upon the ansible-firewall role
+# Host definition required for SSH jump
+
+- hosts: localhost
+  roles:
+  - role: ansible-example-fortios

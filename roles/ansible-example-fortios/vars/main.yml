@@ -1,0 +1,8 @@
+# Default variables for Role
+# Use either these or inventory 
+# Recommended encryption with ansible-vault
+
+host: "192.168.1.1"
+username: "admin"
+password: "letmein"
+vdom: "root"

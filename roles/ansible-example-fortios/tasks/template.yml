@@ -1,0 +1,328 @@
+# Templates for every task available 
+# set "no_log: true" to hide password from console output
+# Add desired tasks to main file for execution
+
+- name: Set static route on the fortigate
+  fortiosconfig:
+    action: "set"
+    host:  "{{  host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "router static"
+    config_parameters:
+      seq-num: "{{ item.seq }}"
+      dst: "{{ item.dst }}"
+      device: "{{ item.device }}"
+      gateway: "{{ item.gateway }}"
+      comment: "{{ item.comment }}"
+  with_items: "{{ routes }}"
+
+- name: Create firewall address - subnet
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    vdom: "{{ vdom }}"
+    config: "firewall address"
+    config_parameters:
+      subnet: "{{item.subnet}}"
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      associated-interface: "{{ item.associated_interface }}"
+  with_items: "{{ address_subnet }}"
+
+- name: Create firewall address - iprange
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    vdom: "{{ vdom }}"
+    config: "firewall address"
+    config_parameters:
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      associated-interface: "{{ item.associated_interface }}"
+      start-ip: "{{ item.start_ip }}"
+      end-ip: "{{ item.end_ip }}"
+  with_items: "{{ address_iprange }}"
+
+- name: Create firewall address - fqdn
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    vdom: "{{ vdom }}"
+    config: "firewall address"
+    config_parameters:
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      associated-interface: "{{ item.associated_interface }}"
+      fqdn: "{{ item.fqdn }}"
+  with_items: "{{ address_fqdn }}"
+
+- name: Create firewall address - wildcard-fqdn
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    vdom: "{{ vdom }}"
+    config: "firewall address"
+    config_parameters:
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      associated-interface: "{{ item.associated_interface }}"
+      wildcard-fqdn: "{{ item.wildcard_fqdn }}"
+  with_items: "{{ address_wildcard_fqdn }}"
+
+- name: Create firewall address IPv6 - ipprefix
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    vdom: "{{ vdom }}"
+    config: "firewall address6"
+    config_parameters:
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      ip6: "{{ item.ip6 }}"
+      comment: "{{ item.comment }}"
+  with_items: "{{ address6 }}"
+
+- name: Config firewall address group
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall addrgrp"
+    config_parameters:
+      name: "{{ item.name }}"
+      member: "{{ item.member }}"
+      comment: "{{ item.comment }}"
+  with_items: "{{ firewall_addrgrp }}"
+
+- name:  Create firewall policy
+  fortiosconfig:
+    action: "set"
+    host:  "{{ host }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall policy"
+    config_parameters:
+      json:
+        policyid: "{{item.policyid}}"
+        name: "{{item.name}}"
+        action: "{{item.action}}"
+        schedule: "{{item.schedule}}"
+        nat: "{{item.nat}}"
+        groups: "{{ item.groups }}"
+        srcintf: "{{item.srcintf}}"
+        dstintf: "{{item.dstintf}}"
+        srcaddr: "{{item.srcaddr}}"
+        dstaddr: "{{item.dstaddr}}"
+        service: "{{item.service}}"
+        comment: "{{item.comment}}"
+  with_items: "{{ policy }}"
+
+- name: Config System Interface
+  fortiosconfig:
+    action: "put"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "system interface"
+    config_parameters:
+      name: "{{ item.name }}"
+      json:
+        name: "{{ item.name }}"
+        vdom: "{{ item.vdom }}"
+        ip: "{{ item.ip }}"
+        allowaccess: "{{ item.allow }}"
+        role: "{{ item.role }}"
+        type: "{{ item.type }}"
+        description: "{{ item.description }}"
+        member: "{{item.member}}"
+  with_items: "{{ interface }}"
+
+- name: Config System Admin
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username }}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "system admin"
+    config_parameters:
+      name: "{{ item.name }}"
+      accprofile: "{{ item.profile }}"
+      password: "{{ item.password }}"
+  with_items: "{{ admin }}"
+
+- name: Config custom firewall service
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall.service custom"
+    config_parameters:
+      name: "{{ item.name }}"
+      protocol: "{{ item.protocol }}"
+      tcp-portrange: "{{ item.tcpport }}"
+      udp-portrange: "{{ item.udpport }}"
+      comment: "{{ item.comment }}"
+  with_items: "{{ service }}"
+
+- name: Config firewall service group
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall.service group"
+    config_parameters:
+      name: "{{ item.name }}"
+      member: "{{ item.member }}"
+      comment: "{{ item.comment }}"
+  with_items: "{{ firewall_service_group }}"
+
+- name: Config Firewall Schedule Recurring
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall.schedule recurring"
+    config_parameters:
+      name: "{{ item.name }}"
+      start: "{{ item.start }}"
+      end: "{{ item.end }}"
+      day: "{{ item.day }}"
+  with_items: "{{ schedule }}"
+
+- name: Config Firewall VIP
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall vip"
+    config_parameters:
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      extip: "{{ item.extip }}"
+      extintf: "{{ item.extintf }}"
+      extaddr: "{{ item.extaddr }}"
+      mappedip: "{{ item.mappedip }}"
+      mappedaddr: "{{ item.mappedaddr }}"
+      portforward: "{{ item.portforward }}"
+      protocol: "{{ item.protocol }}"
+      extport: "{{ item.extport }}"
+      mappedport: "{{ item.mappedport }}"
+      portmapping-type: "{{ item.portmap_type }}"
+  with_items: "{{ vip }}"
+
+- name: Config VPN SSL Settings
+  fortiosconfig:
+    action: "put"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "vpn.ssl settings"
+    config_parameters:
+      servercert: "{{ item.servercert }}"
+      idle-timeout: "{{ item.idletimeout }}"
+      port: "{{ item.port }}"
+      source-interface: "{{ item.srcintf }}"
+      tunnel-ip-pools: "{{ item.pools }}"
+      tunnel-ipv6-pools: "{{ item.pools6 }}"
+      source-address: "{{ item.srcaddr }}"
+      source-address6: "{{ item.srcaddr6 }}"
+      default-portal: "{{ item.default_portal }}"
+      authentication-rule: "{{ item.authrule }}"
+  with_items: "{{ vpn_ssl_settings }}"
+
+- name: Config VPN SSL Web Portal
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "vpn.ssl.web portal"
+    config_parameters:
+      name: "{{ item.name }}"
+      tunnel-mode: "{{ item.tunnel_mode }}"
+      ip-mode: "{{ item.ip_mode }}"
+      ipv6-tunnel-mode: "{{ item.ipv6_tunnel_mode }}"
+      ip-pools: "{{ item.ip_pools }}"
+      ipv6-pools: "{{ item.ipv6_pools }}"
+      split-tunneling: "{{ item.split_tunneling }}"
+      ipv6-split-tunneling: "{{ item.ipv6_split_tunneling }}"
+      web-mode: "{{ item.web_mode }}"
+  with_items: "{{ vpn_ssl_web_portal }}"
+
+- name: Config User local
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "user local"
+    config_parameters:
+      name: "{{ item.name }}"
+      type: "{{ item.type }}"
+      passwd: "{{ item.passwd }}"
+      email-to: "{{ item.email_to }}"
+      passwd-policy: "{{ item.passwd_policy }}"
+      authtimeout: "{{ item.authtimeout }}"
+  with_items: "{{ user }}"
+
+- name: Config User group
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "user group"
+    config_parameters:
+      name: "{{ item.name }}"
+      group-type: "{{ item.group_type }}"
+      authtimeout: "{{ item.authtimeout }}"
+      member: "{{ item.member }}"
+  with_items: "{{ user_group }}"
+
+- name: Config syslogd settings
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "log.syslogd setting"
+    config_parameters:
+      status: "{{ item.status }}"
+      server: "{{ item.server }}"
+      reliable: "{{ item.reliable }}"
+      port: "{{ item.port }}"
+      facility: "{{ item.facility }}"
+      format: "{{ item.format }}"
+      custom-field-name: "{{ item.custom_field_name }}"
+  with_items: "{{ syslogd_setting }}"
+

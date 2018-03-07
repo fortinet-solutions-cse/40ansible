@@ -1,0 +1,11 @@
+# Main file used for testing a single task
+# Variables defined here will be used as a list on the task
+
+service:
+  - service:
+    name: "HTTP_8443"
+    protocol: "TCP/UDP/SCTP"
+    tcpport: "8443"
+    udpport: "8443"
+    comment: "Test Service"
+
