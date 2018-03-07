@@ -12,5 +12,5 @@
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
       webfilter_url:
-        id: "5"
+        id: "1"
         state: "absent"

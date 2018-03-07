@@ -172,7 +172,7 @@ version:
   description: Version of the FortiGate
   returned: always
   type: string
-  sample: v5.6.2
+  sample: v5.6.3
 
 '''
 
@@ -197,17 +197,28 @@ def logout():
 
 
 def filter_wf_url_data(json):
-    attr_list = ['id', 'url', 'type',
-                 'action', 'status',
-                 'exempt', 'web-proxy-profile',
-                 'referrer-host']
-    dict = {}
+    attr_list = ['id', 'name', 'comment',
+                 'one-arm-ips-urlfilter',
+                 'ip-addr-block','entries']
+    dictionary = {}
 
     for attribute in attr_list:
         if attribute in json:
-            dict[attribute] = json[attribute]
+            dictionary[attribute] = json[attribute]
 
-    return dict
+    return dictionary
+
+
+def filter_wf_content_data(json):
+    attr_list = ['id', 'name', 'comment',
+                 'entries']
+    dictionary = {}
+
+    for attribute in attr_list:
+        if attribute in json:
+            dictionary[attribute] = json[attribute]
+
+    return dictionary
 
 
 def webfilter_url(data):
@@ -216,24 +227,34 @@ def webfilter_url(data):
     url_data = filter_wf_url_data(wf_url_data)
 
     if wf_url_data['state'] == "present":
-        return fos.set('webfilter/urlfilter/' + str(wf_url_data['urlfilter_id']),
-                       'entries',
+        return fos.set('webfilter',
+                       'urlfilter',
                        data=url_data,
                        vdom=vdom)
 
     elif wf_url_data['state'] == "absent":
-        return fos.delete('webfilter/urlfilter/' + str(wf_url_data['urlfilter_id']),
-                          '/entries/',
+        return fos.delete('webfilter',
+                          'urlfilter',
                           mkey=url_data['id'],
                           vdom=vdom)
 
 
 def webfilter_content(data):
-    return ""
+    vdom = data['vdom']
+    wf_content_data = data['webfilter_content']
+    content_data = filter_wf_content_data(wf_content_data)
 
+    if wf_content_data['state'] == "present":
+        return fos.set('webfilter',
+                       'content',
+                       data=content_data,
+                       vdom=vdom)
 
-def webfilter_profile(data):
-    return ""
+    elif wf_content_data['state'] == "absent":
+        return fos.delete('webfilter',
+                          'content',
+                          mkey=content_data['id'],
+                          vdom=vdom)
 
 
 def fortios_webfilter(data):
@@ -260,8 +281,7 @@ def main():
         "username": {"required": True, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
         "webfilter_url": {"required": False, "type": "dict"},
-        "webfilter_content": {"required": False, "type": "dict"},
-        "webfilter_profile": {"required": False, "type": "dict"}
+        "webfilter_content": {"required": False, "type": "dict"}
     }
 
     module = AnsibleModule(argument_spec=fields,
