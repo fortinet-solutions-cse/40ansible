@@ -596,11 +596,10 @@ def fortigate_config_del(data):
 
     if resp['status'] == "success":
         return False, True, meta
+    elif resp['http_status'] == 404:
+        return False, False, meta
     else:
-        if resp['reason'] == "Not Found":
-            return False, False, meta
-        else:
-            return True, False, meta
+        return True, False, meta
 
 
 def fortigate_config_ssh(data):
