@@ -1,0 +1,31 @@
+{
+  "ANSIBLE_MODULE_ARGS": {
+    "webfilter_content": {
+      "state": "present",
+      "id": "1",
+      "name": "default",
+      "entries": [
+        {
+          "status": "enable",
+          "lang": "western",
+          "name": "1",
+          "pattern-type": "www.test45.com",
+          "action": "block",
+          "score": 40
+        },
+        {
+          "status": "enable",
+          "lang": "western",
+          "name": "2",
+          "pattern-type": "www.test46.com",
+          "action": "block",
+          "score": 42
+        }
+      ]
+    },
+    "host": "192.168.122.40",
+    "username": "admin",
+    "password": "",
+    "vdom": "root"
+  }
+}
