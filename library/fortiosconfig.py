@@ -590,7 +590,7 @@ def fortigate_config_del(data):
     resp = fos.delete(functions[0], functions[1], mkey=mkey, vdom=vdom)
     logout()
 
-    meta = {"status": resp['status'], 'version': resp['version'], }
+    meta = {"status": resp['status'], 'http_status': resp['http_status']}
 
     if resp['status'] == "success":
         return False, True, meta
