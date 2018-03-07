@@ -527,6 +527,8 @@ def fortigate_config_set(data):
     meta = {"status": resp['status'], 'http_status': resp['http_status']}
     if resp['status'] == "success":
         return False, True, meta
+    elif resp['error'] == -5:
+        return False, False, meta
     else:
         return True, False, meta
 
