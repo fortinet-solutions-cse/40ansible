@@ -8,16 +8,16 @@
         {
           "status": "enable",
           "lang": "western",
-          "name": "1",
-          "pattern-type": "www.test45.com",
+          "name": "bet-online",
+          "pattern-type": "wildcard",
           "action": "block",
           "score": 40
         },
         {
           "status": "enable",
           "lang": "western",
-          "name": "2",
-          "pattern-type": "www.test46.com",
+          "name": "tv-.*online",
+          "pattern-type": "regexp",
           "action": "block",
           "score": 42
         }

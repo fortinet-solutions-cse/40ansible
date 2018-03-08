@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright 2017 Fortinet, Inc.
+# Copyright 2018 Fortinet, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,82 +28,242 @@ ANSIBLE_METADATA = {'status': ['preview'],
 DOCUMENTATION = '''
 ---
 module: fortios_webfilter
-short_description: Module to configure all aspects of fortios and fortigate.
+short_description: Configure webfilter capabilities of FortiGate and FortiOS.
 description:
-    - This module is able to configure a fortios or fortigate by \
-    allowing the user to set every configuration endpoint from a fortios \
-    or fortigate device. The module transforms the playbook into \
-    the needed REST API calls.
+    - This module is able to configure a FortiGate or FortiOS by
+    allowing the user to configure webfilter feature. For now it
+    is able to handle url and content filtering capabilities. The
+    module uses FortiGate REST API internally to configure the device.
 
 version_added: "2.5"
 author:
     - Miguel Angel Munoz (@mamunozgonzalez)
     - Nicolas Thomas (@thomnico)
 notes:
-    - "Requires fortiosapi library developed by Fortinet"
-    - "Run as a local_action in your playbook"
+    - Requires fortiosapi library developed by Fortinet
+    - Run as a local_action in your playbook
 requirements:
     - fortiosapi>=0.9.8
 options:
     host:
         description:
-            - FortiOS or fortigate IP adress.
-        required: true
-
+            - FortiOS or FortiGate ip adress.
+       required: true
+       type: string
     username:
         description:
-            - FortiOS or fortigate username.
+            - FortiOS or FortiGate username.
         required: true
-
+       type: string
     password:
         description:
-            - FortiOS or fortigate password.
-
+            - FortiOS or FortiGate password.
+        type: string
+        default: ""
     vdom:
         description:
-            - Virtual domain, among those defined previously. A vdom is a \
-            virtual instance of the fortigate that can be configured and \
-            used as a different unit.
+            - Virtual domain, among those defined previously. A vdom is a
+              virtual instance of the FortiGate that can be configured and
+              used as a different unit.
+        type: string
         default: root
-
-    webfilter-url:
+    webfilter_url:
+        description: 
+            - Container for a group of url entries that the FortiGate
+              must act upon
+        type: dict
+        default: null
+        suboptions:
+            id:
+                description:
+                    - Id of URL filter list.
+                required: true
+                type: string
+            name:
+                description:
+                    - Name of URL filter list.
+                type: string
+            comment:
+                description:
+                    - Optional comments.
+                type: string
+                default: null
+            one-arm-ips-url-filter:
+                description:
+                    - Enable/disable DNS resolver for one-arm IPS URL filter operation.
+                type: string
+                choices:
+                    - enable
+                    - disable          
+                default: disable
+            ip-addr-block:
+                description:
+                    - Enable/disable blocking URLs when the hostname appears as an IP address.
+                type: string
+                choices:
+                    - enable
+                    - disable          
+                default: disable
+            entries:
+                description:
+                    - URL filter entries.
+                type: list
+                default: []
+                suboptions:
+                    id: 
+                        description:
+                            - Id of URL.
+                        required: true
+                        type: integer
+                    url:
+                        description:
+                            - URL to be filtered.
+                        required: true
+                        type: string
+                    type: 
+                        description:
+                            - Filter type (simple, regex, or wildcard).
+                        required: true
+                        type: string
+                        choices:
+                            - simple
+                            - regex
+                            - wildcard          
+                    action: 
+                        description:
+                            - Action to take for URL filter matches.
+                        required: true
+                        type: string
+                        choices:
+                            - exempt
+                            - block
+                            - allow
+                            - monitor
+                    status: 
+                        description:
+                            - Enable/disable this URL filter.
+                        required: true
+                        type: string
+                        choices:
+                            - enable
+                            - disable
+                    exempt: 
+                        description:
+                            - If action is set to exempt, select the security profile 
+                              operations that exempt URLs skip. Separate multiple 
+                              options with a space.
+                        required: true
+                        type: string
+                        choices:
+                            - av
+                            - web-content
+                            - activex-java-cookie
+                            - dlp
+                            - fortiguard
+                            - range-block
+                            - pass
+                            - all
+                    web-proxy-profile:
+                        description:
+                            - Web proxy profile.
+                        required: true
+                        type: string
+            state:
+                description:
+                    - Configures the intended state of this object on the FortiGate.
+                      When this value is set to C(present), the object is configured 
+                      on the device and when this value is set to C(absent) the 
+                      object is removed from the device.
+                required: true
+                choices:
+                    - absent
+                    - present          
+    webfilter_content:
         description:
-        default: []
-        
-        id:
-            description:
-        url:
-            description:
-        type:
-            description:
-        action:
-            description:
-        status:
-            description:
-        exempt:
-            description:
-        web-proxy-profile:
-            description:
-        referrer-host:
-            description:
-        state:
-            description:
-            required: false
-            default: present
-            choices:
-            - absent
-            - present
-
-    webfilter-content:
-        description:
-            - 
-        default: []
-        name: "bet"
-        pattern-type: "wildcard"
-        status: "enable"
-        lang: "western"
-        score: 150
-        action: block
+            - Container for a group of content-filtering entries that 
+              the FortiGate must act upon
+        type: dict
+        default: null
+        suboptions:
+            id:
+                description:
+                    - Id of content-filter list.
+                required: true
+                type: string
+            name:
+                description:
+                    - Name of content-filter list.
+                type: string
+            comment:
+                description:
+                    - Optional comments.
+                type: string
+                default: null
+            entries:
+                description:
+                    - Content filter entries.
+                type: list
+                default: []
+                suboptions:
+                    name: 
+                        description:
+                            - Banned word.
+                        required: true
+                        type: string
+                    pattern-type:
+                        description:
+                            - Banned word pattern type: wildcard pattern or Perl regular expression.
+                        required: true
+                        type: string
+                        choices:
+                            - wildcard
+                            - regexp
+                    status: 
+                        description:
+                            - Enable/disable banned word.
+                        required: true
+                        type: string
+                        choices:
+                            - enable
+                            - disable
+                    lang: 
+                        description:
+                            - Language of banned word.
+                        required: true
+                        type: string
+                        choices:
+                            - western
+                            - simch
+                            - trach
+                            - japanese
+                            - korean
+                            - french
+                            - thai
+                            - spanish
+                            - cyrillic
+                    score: 
+                        description:
+                            - Score, to be applied every time the word appears on a web page.
+                        required: true
+                        type: integer
+                    action: 
+                        description:
+                            - Block or exempt word when a match is found.
+                        required: true
+                        type: string
+                        choices:
+                            - block
+                            - exempt
+            state:
+                description:
+                    - Configures the intended state of this object on the FortiGate.
+                      When this value is set to C(present), the object is configured 
+                      on the device and when this value is set to C(absent) the 
+                      object is removed from the device.
+                required: true
+                choices:
+                    - absent
+                    - present          
 '''
 
 EXAMPLES = '''
@@ -121,58 +281,120 @@ EXAMPLES = '''
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
       webfilter_url:
-        id: "5"
-        url: "www.test45.com"
-        type: "simple"
-        action: "exempt"
-        status: "enable"
-        exempt: "pass"
-        web-proxy-profile: ""
-        referrrer-host: ""
         state: "present"
+        id: "1"
+        name: "default"
+        comment: "mycomment"
+        one-arm-ips-url-filter: "disable"
+        ip-addr-block: "disable"
+        entries:
+          - id: "1"
+            url: "www.test1.com"
+            type: "simple"
+            action: "exempt"
+            status: "enable"
+            exempt: "pass"
+            web-proxy-profile: ""
+            referrrer-host: ""
+          - id: "2"
+            url: "www.test2.com"
+            type: "simple"
+            action: "exempt"
+            status: "enable"
+            exempt: "pass"
+            web-proxy-profile: ""
+            referrrer-host: ""
+
 
 - hosts: localhost
   vars:
-   host: "192.168.40.8"
+   host: "192.168.122.40"
    username: "admin"
    password: ""
    vdom: "root"
   tasks:
-  - name: Configure content to be used with webfilter feature
+  - name: Configure web content filtering in fortigate
     fortios_webfilter:
       host:  "{{  host }}"
       username: "{{  username}}"
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
-      webfilter-content:
-        name: "online-casino"
-        pattern-type: "wildcard"
-        status: "enable"
-        lang: "western"
-        score: 150
-        action: "block"
-        state: "present"
-       
+      webfilter_content:
+        id: "1"
+        name: "default"
+        comment: ""
+        entries:
+          - name: "1"
+            pattern-type: "www.test45.com"
+            status: "enable"
+            lang: "western"
+            score: 40
+            action: "block"
+          - name: "2"
+            pattern-type: "www.test46.com"
+            status: "enable"
+            lang: "western"
+            score: 42
+            action: "block"
+        state: "present"       
 '''
 
 RETURN = '''
-results:
-  description: Data returned by the endpoint operation
-  returned: on sucess
+build:
+  description: Build number of the fortigate image
+  returned: always
   type: string
-  sample: 'apply-to: admin-password ipsec-preshared-key'
-
+  sample: '1547'
+http_method: 
+  description: Last method used to provision the content into FortiGate
+  returned: always
+  type: string
+  sample: 'PUT'
+http_status:
+  description: Last result given by FortiGate on last operation applied
+  returned: always
+  type: integer
+  sample: 200
+mkey:
+  description: Master key (id) used in the last call to FortiGate
+  returned: success
+  type: string
+  sample: "key1"
+name:
+  description: Name of the table used to fulfill the request
+  returned: always
+  type: string
+  sample: "urlfilter"
+path:
+  description: Path of the table used to fulfill the request
+  returned: always
+  type: string
+  sample: "webfilter"
+revision:
+  description: Internal revision number
+  returned: always
+  type: string
+  sample: "17.0.2.10658"
+serial
+  description: Serial number of the unit
+  returned: always
+  type: string
+  sample: "FGVMEVYYQT3AB5352"
 status:
   description: Indication of the operation's result
   returned: always
   type: string
-  sample: success
-
+  sample: "success"
+vdom:
+  description: Virtual domain used
+  returned: always
+  type: string
+  sample: "root"
 version:
   description: Version of the FortiGate
   returned: always
   type: string
-  sample: v5.6.3
+  sample: "v5.6.3"
 
 '''
 
@@ -197,12 +419,12 @@ def logout():
 
 
 def filter_wf_url_data(json):
-    attr_list = ['id', 'name', 'comment',
+    option_list = ['id', 'name', 'comment',
                  'one-arm-ips-urlfilter',
                  'ip-addr-block','entries']
     dictionary = {}
 
-    for attribute in attr_list:
+    for attribute in option_list:
         if attribute in json:
             dictionary[attribute] = json[attribute]
 
@@ -210,11 +432,11 @@ def filter_wf_url_data(json):
 
 
 def filter_wf_content_data(json):
-    attr_list = ['id', 'name', 'comment',
+    option_list = ['id', 'name', 'comment',
                  'entries']
     dictionary = {}
 
-    for attribute in attr_list:
+    for attribute in option_list:
         if attribute in json:
             dictionary[attribute] = json[attribute]
 
@@ -277,8 +499,8 @@ def fortios_webfilter(data):
 def main():
     fields = {
         "host": {"required": True, "type": "str"},
-        "password": {"required": False, "type": "str"},
         "username": {"required": True, "type": "str"},
+        "password": {"required": False, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
         "webfilter_url": {"required": False, "type": "dict"},
         "webfilter_content": {"required": False, "type": "dict"}

@@ -16,14 +16,14 @@
         name: "default"
         comment: ""
         entries:
-          - name: "1"
-            pattern-type: "www.test45.com"
+          - name: "bet-online"
+            pattern-type: "wildcard"
             status: "enable"
             lang: "western"
             score: 40
             action: "block"
-          - name: "2"
-            pattern-type: "www.test46.com"
+          - name: "tv-.*online"
+            pattern-type: "regexp"
             status: "enable"
             lang: "western"
             score: 42
