@@ -4,6 +4,7 @@
       "state": "present",
       "id": "1",
       "name": "default",
+      "comment": "",
       "entries": [
         {
           "status": "enable",

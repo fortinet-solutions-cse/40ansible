@@ -483,7 +483,7 @@ def main():
                 "name": {"required": True, "type": "str"},
                 "comment": {"required": False, "type": "str", "default": ""},
                 "one-arm-ips-urlfilter": {"required": False, "type": "str", "default": "disable",
-                                           "choices": ["enable", "disable"]},
+                                          "choices": ["enable", "disable"]},
                 "ip-addr-block": {"required": False, "type": "str", "default": "disable",
                                   "choices": ["enable", "disable"]},
                 "entries": {
@@ -504,7 +504,28 @@ def main():
                 }
             }
         },
-        "webfilter_content": {"required": False, "type": "dict"}
+        "webfilter_content": {
+            "required": False, "type": "dict",
+            "options": {
+                "state": {"required": True, "type": "str"},
+                "id": {"required": True, "type": "str"},
+                "name": {"required": True, "type": "str"},
+                "comment": {"required": False, "type": "str", "default":""},
+                "entries": {
+                    "required": False, "type": "list", "default": [],
+                    "options": {
+                        "name": {"required": True, "type": "string"},
+                        "pattern-type": {"required": True, "type": "string", "choices": ["wildcard", "regexp"]},
+                        "status": {"required": True, "type": "string", "choices": ["enable", "disable"]},
+                        "lang": {"required": True, "type": "string",
+                                 "choices": ["western", "simch", "trach", "japanese", "korean", "french", "thai",
+                                             "spanish", "cyrillic"]},
+                        "score": {"required": True, "type": "integer"},
+                        "action": {"required": True, "type": "string", "choices": ["block", "exempt"]},
+                    }
+                }
+            }
+        }
     }
 
     module = AnsibleModule(argument_spec=fields,
