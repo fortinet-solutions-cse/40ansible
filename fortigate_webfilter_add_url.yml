@@ -16,7 +16,7 @@
         id: "1"
         name: "default"
         comment: "mycomment"
-        one-arm-ips-url-filter: "disable"
+        one-arm-ips-urlfilter: "disable"
         ip-addr-block: "disable"
         entries:
           - id: "1"
@@ -26,7 +26,7 @@
             status: "enable"
             exempt: "pass"
             web-proxy-profile: ""
-            referrrer-host: ""
+            referrer-host: ""
           - id: "2"
             url: "www.test2.com"
             type: "simple"
@@ -34,4 +34,4 @@
             status: "enable"
             exempt: "pass"
             web-proxy-profile: ""
-            referrrer-host: ""
+            referrer-host: ""
