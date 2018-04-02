@@ -74,7 +74,7 @@ EXAMPLES = '''
 
 fos = FortiOSAPI()
 formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 logger = logging.getLogger('fortiosapi')
 hdlr = logging.FileHandler('/var/tmp/ansible-fortiosconfig.log')
 hdlr.setFormatter(formatter)
@@ -449,7 +449,6 @@ def get(name, action=None, mkey=None, parameters=None):
 
 
 def extract_path_and_name(url_segment_list):
-    
     if len(url_segment_list) < 2:
         raise AssertionError('List should have a minimum of two items')
     path = '/'.join(url_segment_list[0:-1])
@@ -460,8 +459,13 @@ def extract_path_and_name(url_segment_list):
 def login(data):
     host = data['host']
     username = data['username']
+    password = data['password']
+    if 'https' in data and not data['https']:
+        fos.https('off')
+    else:
+        fos.https('on')
     fos.debug('on')
-    fos.login(host, username, '')
+    fos.login(host, username, password)
 
 
 def logout():
@@ -469,10 +473,7 @@ def logout():
 
 
 def fortigate_config_put(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
 
@@ -488,7 +489,7 @@ def fortigate_config_put(data):
     resp = fos.put(functions[0], functions[1], vdom=data['vdom'],
                    mkey=mkey, data=data['config_parameters'])
 
-    fos.logout()
+    logout()
 
     meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
@@ -498,16 +499,13 @@ def fortigate_config_put(data):
 
 
 def fortigate_config_post(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
 
     resp = fos.post(functions[0], functions[1], vdom=data['vdom'],
                     data=data['config_parameters'])
-    fos.logout()
+    logout()
 
     meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
@@ -517,16 +515,13 @@ def fortigate_config_post(data):
 
 
 def fortigate_config_set(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
 
     resp = fos.set(functions[0], functions[1], vdom=data['vdom'],
                    data=data['config_parameters'])
-    fos.logout()
+    logout()
 
     meta = {"status": resp['status'], 'version': resp['version'], }
     if resp['status'] == "success":
@@ -536,10 +531,7 @@ def fortigate_config_set(data):
 
 
 def fortigate_config_get(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
     schema = fos.schema(functions[0], functions[1])
@@ -552,31 +544,28 @@ def fortigate_config_get(data):
             mkey = dataconf[keyname]
 
     resp = fos.get(functions[0], functions[1], mkey=mkey, vdom=data['vdom'])
-    fos.logout()
+    logout()
 
     if resp['status'] == "success":
         return False, False, {
             "status": resp['status'],
             'version': resp['version'], 'results': resp['results']
-            }
+        }
     else:
         return True, False, {
             "status": resp['status'], 'version': resp['version']
-            }
+        }
 
 
 def fortigate_config_monitor(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
-    
+
     path, name = extract_path_and_name(functions)
-    
+
     resp = fos.monitor(path, name, vdom=data['vdom'])
-    fos.logout()
+    logout()
 
     if resp['status'] == "success":
         return False, False, {
@@ -588,11 +577,8 @@ def fortigate_config_monitor(data):
 
 
 def fortigate_config_del(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
     vdom = data['vdom']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
     schema = fos.schema(functions[0], functions[1])
@@ -600,8 +586,8 @@ def fortigate_config_del(data):
     dataconf = data['config_parameters']
     mkey = dataconf[keyname]
 
-    resp = fos.delete(functions[0], functions[1],  mkey=mkey, vdom=vdom)
-    fos.logout()
+    resp = fos.delete(functions[0], functions[1], mkey=mkey, vdom=vdom)
+    logout()
 
     meta = {"status": resp['status'], 'version': resp['version'], }
 
@@ -618,19 +604,17 @@ def fortigate_config_ssh(data):
     host = data['host']
     username = data['username']
     password = data['password']
-    vdom = data['vdom']
     cmds = data['commands']
 
     try:
-        out, err = fos.ssh(cmds,host,username,password=password)
-        meta = {"out": out, "err": err,}
+        out, err = fos.ssh(cmds, host, username, password=password)
+        meta = {"out": out, "err": err, }
         return False, True, meta
     except:
-        return True, False,  { "out": "n/a", "err": "at least one cmd returned an error"}
+        return True, False, {"out": "n/a", "err": "at least one cmd returned an error"}
 
 
 def remove_sensitive_data(string):
-
     while True:
         filtered_string = re.sub('set password ENC.*?==', '', string, flags=re.MULTILINE | re.DOTALL)
         if string == filtered_string:
@@ -647,7 +631,7 @@ def remove_sensitive_data(string):
 
     while True:
         filtered_string = re.sub('set private-key.*?-----END ENCRYPTED PRIVATE KEY-----"',
-                               '',
+                                 '',
                                  string,
                                  flags=re.MULTILINE | re.DOTALL)
         if string == filtered_string:
@@ -657,7 +641,7 @@ def remove_sensitive_data(string):
 
     while True:
         filtered_string = re.sub('set certificate.*?-----END CERTIFICATE-----"',
-                               '',
+                                 '',
                                  string,
                                  flags=re.MULTILINE | re.DOTALL)
         if string == filtered_string:
@@ -669,11 +653,8 @@ def remove_sensitive_data(string):
 
 
 def check_diff(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
 
-    fos.login(host, username, password)
+    login(data)
 
     parameters = {'destination': 'file',
                   'scope': 'global'}
@@ -694,10 +675,10 @@ def check_diff(data):
     parameters = {'scope': 'global'}
 
     resp = fos.download('system/config',
-                       'backup'+ remote_filename,
+                        'backup' + remote_filename,
                         vdom=data['vdom'],
                         parameters=parameters)
-    fos.logout()
+    logout()
 
     if resp.status_code == 200:
 
@@ -710,7 +691,7 @@ def check_diff(data):
         differences = ""
         for line in difflib.unified_diff(local_config_file, remote_config_file, fromfile='local', tofile='fortigate',
                                          lineterm=''):
-            differences += line+'\n'
+            differences += line + '\n'
 
         return False, True, {
             'status': resp.status_code,
@@ -725,17 +706,14 @@ def check_diff(data):
 
 
 def fortigate_config_backup(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     functions = data['config'].split()
 
-    parameters = { 'destination':'file',
-                   'scope':'global'}
+    parameters = {'destination': 'file',
+                  'scope': 'global'}
 
-    resp = fos.monitor(functions[0]+'/'+functions[1],
+    resp = fos.monitor(functions[0] + '/' + functions[1],
                        functions[2],
                        vdom=data['vdom'],
                        parameters=parameters)
@@ -745,66 +723,64 @@ def fortigate_config_backup(data):
             'status': resp['status'],
             'version': resp['version'],
             'results': resp['results']
-            }
+        }
 
     remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
-    parameters = { 'scope':'global' }
+    parameters = {'scope': 'global'}
 
-    resp = fos.download(functions[0]+'/'+functions[1],
-                        functions[2]+remote_filename,
+    resp = fos.download(functions[0] + '/' + functions[1],
+                        functions[2] + remote_filename,
                         vdom=data['vdom'],
                         parameters=parameters)
-    fos.logout()
+    logout()
 
     if resp.status_code == 200:
 
-        file = open(data['config_parameters']['filename'],'w')
+        file = open(data['config_parameters']['filename'], 'w')
         file.write(resp.content)
         file.close()
         return False, False, {
             'status': resp.status_code,
             'version': fos.get_version(),
-            'backup' : resp.content
-            }
+            'backup': resp.content
+        }
     else:
         return True, False, {
             'status': resp.status_code,
             'version': fos.get_version()
-            }
+        }
 
 
 def fortigate_config_restore(data):
-    host = data['host']
-    username = data['username']
-    password = data['password']
-    fos.login(host, username, password)
+    login(data)
 
     if data['diff'] == True:
         return check_diff(data)
 
     functions = data['config'].split()
 
-    parameters = { 'global':'1' }
-    upload_data = {'source':'upload', 'scope':'global'}
+    parameters = {'global': '1'}
+    upload_data = {'source': 'upload', 'scope': 'global'}
     files = {'file': ('backup_data', open(data['config_parameters']['filename'], 'r'), 'text/plain')}
 
-    resp = fos.upload(functions[0]+'/'+functions[1],functions[2],
-                             data=upload_data,
-                             parameters=parameters,
-                             files=files )
+    resp = fos.upload(functions[0] + '/' + functions[1], functions[2],
+                      data=upload_data,
+                      parameters=parameters,
+                      files=files)
+    logout()
 
     if resp.status_code == 200:
         return False, True, {
             'status': resp.status_code,
             'version': fos.get_version(),
-            'result' : resp.content
-            }
+            'result': resp.content
+        }
     else:
         return True, False, {
             'status': resp.status_code,
             'version': fos.get_version(),
             'result': resp.content
-            }
+        }
 
 
 def main():
@@ -816,11 +792,12 @@ def main():
         "vdom": {"required": False, "type": "str", "default": "root"},
         "config": {"required": False, "choices": AVAILABLE_CONF, "type": "str"},
         "mkey": {"required": False, "type": "str"},
+        "https": {"required": False, "type": "bool", "default": "True"},
         "action": {
             "default": "set",
             "choices": ['set', 'delete', 'put',
                         'post', 'get', 'monitor',
-                        'ssh','backup','restore'],
+                        'ssh', 'backup', 'restore'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
