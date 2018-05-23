@@ -351,6 +351,7 @@ AVAILABLE_CONF = [
     'system vdom-sflow',
     'system virtual-wan-link',
     'system virtual-wire-pair',
+    'system vmlicense upload',
     'system wccp',
     'system zone',
     'user adgrp',
@@ -653,7 +654,6 @@ def remove_sensitive_data(string):
 
 
 def check_diff(data):
-
     login(data)
 
     parameters = {'destination': 'file',
@@ -751,7 +751,7 @@ def fortigate_config_backup(data):
         }
 
 
-def fortigate_config_restore(data):
+def fortigate_config_upload(data):
     login(data)
 
     if data['diff'] == True:
@@ -797,7 +797,8 @@ def main():
             "default": "set",
             "choices": ['set', 'delete', 'put',
                         'post', 'get', 'monitor',
-                        'ssh', 'backup', 'restore'],
+                        'ssh', 'backup', 'restore',
+                        'upload'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
@@ -813,7 +814,8 @@ def main():
         "monitor": fortigate_config_monitor,
         "ssh": fortigate_config_ssh,
         "backup": fortigate_config_backup,
-        "restore": fortigate_config_restore
+        "restore": fortigate_config_upload,
+        "upload": fortigate_config_upload
     }
 
     module = AnsibleModule(argument_spec=fields,

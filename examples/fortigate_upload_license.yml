@@ -1,0 +1,17 @@
+- hosts: localhost
+  vars:
+   host: "192.168.122.40"
+   username: "admin"
+   password: ""
+   vdom: "global"
+  tasks:
+  - name: Upload license
+    fortiosconfig:
+     config: "system vmlicense upload"
+     action: "upload"
+     host:  "{{ host }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     vdom:  "{{ vdom }}"
+     config_parameters:
+      filename: "license_file.lic"

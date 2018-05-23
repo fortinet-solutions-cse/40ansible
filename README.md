@@ -32,7 +32,7 @@ Adapt the IP of the Fortigate in fortigate_mix.yml to your environment
 You can then write your own playbooks and use inventory.
 
 Please note Ansible does not run on FortiGate, instead you must run it locally, on a
-specific server or Docker image (dockerfile provided). 
+specific server or Docker image (dockerfile provided).
 
 More complete documentation on modules in Ansible documentation:
 http://docs.ansible.com/ansible/modules.html
