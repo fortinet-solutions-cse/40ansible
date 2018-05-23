@@ -1,0 +1,31 @@
+- hosts: localhost
+  vars:
+   host: "192.168.122.40"
+   username: "admin"
+   password: ""
+   vdom: "root"
+  tasks:
+  - name: Configure web content filtering in fortigate
+    fortios_webfilter:
+      host:  "{{  host }}"
+      username: "{{  username}}"
+      password: "{{ password }}"
+      vdom:  "{{  vdom }}"
+      webfilter_content:
+        id: "1"
+        name: "default"
+        comment: ""
+        entries:
+          - name: "bet-online"
+            pattern-type: "wildcard"
+            status: "enable"
+            lang: "western"
+            score: 40
+            action: "block"
+          - name: "tv-.*online"
+            pattern-type: "regexp"
+            status: "enable"
+            lang: "western"
+            score: 42
+            action: "block"
+        state: "present"
