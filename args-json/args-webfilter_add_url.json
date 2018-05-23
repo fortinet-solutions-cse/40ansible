@@ -1,0 +1,38 @@
+{
+  "ANSIBLE_MODULE_ARGS": {
+    "webfilter_url": {
+      "state": "present",
+      "id": "1",
+      "name": "default",
+      "comment": "mycomment",
+      "one-arm-ips-urlfilter": "disable",
+      "ip-addr-block": "disable",
+      "entries": [
+        {
+          "id": "1",
+          "url": "www.test1.com",
+          "type": "simple",
+          "action": "exempt",
+          "status": "enable",
+          "exempt": "pass",
+          "web-proxy-profile": "",
+          "referrer-host": ""
+        },
+        {
+          "id": "2",
+          "url": "www.test2.com",
+          "type": "simple",
+          "action": "exempt",
+          "status": "enable",
+          "exempt": "pass",
+          "web-proxy-profile": "",
+          "referrer-host": ""
+        }
+      ]
+    },
+    "host": "192.168.122.40",
+    "password": "",
+    "username": "admin",
+    "vdom": "global"
+  }
+}

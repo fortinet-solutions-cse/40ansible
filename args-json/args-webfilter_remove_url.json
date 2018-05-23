@@ -1,0 +1,12 @@
+{
+  "ANSIBLE_MODULE_ARGS": {
+    "webfilter_url": {
+      "state": "absent",
+      "id": "1"
+    },
+    "host": "192.168.122.40",
+    "username": "admin",
+    "password": "",
+    "vdom": "root"
+  }
+}
