@@ -17,7 +17,7 @@ If your environment does not support pip installation the latest version is loca
 
 Follow next instructions:
 
-`git clone https://github.com/thomnico/40ansible.git`
+`git clone https://github.com/fortinet-solutions-cse/40ansible.git`
 
 `cd 40ansible`
 
