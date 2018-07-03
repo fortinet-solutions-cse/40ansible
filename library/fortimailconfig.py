@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2017 Fortinet, Inc.
+# Copyright 2018 Fortinet, Inc.
 #
 # All Rights Reserved
 #
@@ -96,7 +96,7 @@ def fortimail_config_post(data):
 
     resp = fml.post(data['resource'],
                     data['domain'],
-                    data=data['data'])
+                    data=json.dumps(data['data']))
 
     if "errorNumber" in  resp:
         return True, False, resp
@@ -154,7 +154,7 @@ def main():
             "choices": ['delete', 'put', 'post', 'get'],
             "type": 'str'
         },
-        "data": {"required": False, "type":"str"}
+        "data": {"required": False, "type":"dict"}
     }
 
     choice_map = {
