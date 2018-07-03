@@ -30,7 +30,6 @@
         relay_auth_status: False
         domain_interval: False
         system_domain: 1
-        reqAction: 1
         sender_addr_rate_notification_state: False
         disclaimer_incoming_body_location: 0
         ldap_group_recipient: False
