@@ -787,7 +787,7 @@ def fortigate_config_upload(data):
 def main():
     fields = {
         "host": {"required": True, "type": "str"},
-        "password": {"required": False, "type": "str"},
+        "password": {"required": False, "type": "str", "no_log": True},
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
