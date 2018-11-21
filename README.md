@@ -12,7 +12,7 @@ If your environment does not support pip installation the latest version is loca
 
  https://github.com/fortinet-solutions-cse/fortiosapi/tree/master/fortiosapi
 
-*Note: FortiGate version are supported from 5.6 onwards*
+*Note: FortiGate versions are supported from 5.6 onwards*
 
 # Quickstart
 
