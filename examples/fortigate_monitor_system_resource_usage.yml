@@ -1,0 +1,16 @@
+- hosts: localhost
+  gather_facts: no
+  vars:
+     username: "admin"
+     password: ""
+     vdom: "root"
+     host: "192.168.122.40"
+  tasks:
+    - name: Get system resource usage
+      fortiosconfig:
+       config: "system resource usage"
+       action: "monitor"
+       host:  "{{ host }}"
+       username: "{{ username }}"
+       password: "{{ password }}"
+       vdom: "{{ vdom }}"

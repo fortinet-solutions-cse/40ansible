@@ -1,0 +1,102 @@
+- hosts: localhost
+  vars:
+    host: "192.168.122.12"
+    username: "admin"
+    password: ""
+  tasks:
+  - name: Create new domain
+    fortimailconfig:
+      action: "post"
+      host:  "{{ host }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      domain: "dsa.com"
+      data:
+        fallbackport: 25
+        disclaimer_outgoing_header_status: False
+        hide: False
+        usessl: False
+        disclaimer_outgoing_body_status: False
+        recipient_verification_smtp_cmd: 0
+        other_recipient: False
+        max_user_quota: 1000
+        is_service_domain: False
+        migration_status: False
+        max_mailbox: 10
+        mail_access: 7
+        sender_addr_rate_ctrl_max_spam_state: False
+        recipient_verification_smtp_accept_reply_string_pattern: ""
+        disclaimer_incoming_header_insertion_name: ""
+        relay_auth_status: False
+        domain_interval: False
+        system_domain: 1
+        sender_addr_rate_notification_state: False
+        disclaimer_incoming_body_location: 0
+        ldap_group_recipient: False
+        sender_addr_rate_control_max_megabytes: 100
+        ldap_asav_state: False
+        disclaimer_outgoing_body_location: 0
+        is_subdomain: False
+        disclaimer_outgoing_header_insertion_name: ""
+        original: False
+        sender_addr_rate_ctrl_max_spam: 5
+        disclaimer_outgoing_header_insertion_value: ""
+        relay_ip_pool_port: 25
+        relay_ip_pool_ssl: False
+        sender_addr_rate_ctrl_max_recipients: 60
+        recipient_verification: 0
+        relay_auth_username: ""
+        other_address: ""
+        disclaimer_incoming_header_insertion_value: ""
+        disclaimer_incoming_body_content: ""
+        disclaimer_incoming_body_content_html: ""
+        fallbackhost: "fhtrtt.vom"
+        rcptvrfy_try_mhost: False
+        relay_auth_type: 0
+        sender_addr_rate_ctrl_exempt: "[ ]"
+        sender_addr_rate_ctrl_max_recipients_state: False
+        ldap_generic_routing_ssl: False
+        hours: 0
+        port: 25
+        objectID: "DomainSetting:{D:dsa.com}"
+        sender_addr_rate_control_max_megabytes_state: False
+        recipient_verification_background: 0
+        relay_auth_password: "******"
+        group_recipient_only: False
+        max_msg_size: 204800
+        alt_smtp_ena: False
+        ip: "mysmtp"
+        bypass_bounce_verification: False
+        ldap_routing_state: False
+        sender_addr_rate_ctrl_action: 512
+        alternative_domain_name: ""
+        maindomain: "dsa.com"
+        ldap_generic_routing_port: 25
+        addressbook_add_option: 2
+        disclaimer_outgoing_body_content: ""
+        alt_smtp_ssl: False
+        disclaimer_incoming_header_status: False
+        remove_outgoing_header: False
+        sender_addr_rate_control_state: False
+        mdomain: "dsa.com"
+        sender_addr_rate_control_max_messages_state: True
+        sender_addr_rate_control_max_messages: 30
+        alt_smtp_port: 25
+        report_template_name: "default"
+        global_bayesian: True
+        fallbackusessl: False
+        days: 0
+        disclaimer_status: 1
+        disclaimer_incoming_body_status: False
+        mxflag: 0
+        ip_pool_direction: 1
+        default_language: ""
+        other_greeting: ""
+        alt_smtp_host: ""
+        domain_recipient: True
+        ldap_service_status: True
+        default_theme: 8
+        webmail_service_type: 0
+        disclaimer_outgoing_body_content_html: ""
+        group_exclude_individual: False
+        domain_report: False

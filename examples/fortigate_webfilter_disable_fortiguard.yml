@@ -1,0 +1,20 @@
+- hosts: localhost
+#  strategy: debug
+  vars:
+   host: "192.168.122.40:443"
+   username: "admin"
+   password: ""
+   vdom: "root"
+  tasks:
+  - name: disable webfilter fortiguard
+    fortiosconfig:
+     config: "webfilter profile"
+     action: "set"
+     host: "{{ host }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     vdom: "{{ vdom }}"
+     config_parameters:
+       name: "default"
+       ftgd-wf: 
+         options: "ftgd-disable"

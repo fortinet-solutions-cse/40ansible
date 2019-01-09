@@ -1,0 +1,168 @@
+# Templates for parameter definitions for every task available 
+# 
+# Add them to the main file to feed tasks as required 
+
+
+routes:
+  - route:
+    seq: 1
+    dst: "192.168.1.0 255.255.255.0"
+    device: "wan1"
+    gateway: "192.168.1.1"
+    comment: "Test"
+
+address_iprange:
+  - address_iprange:
+    name: "Test"
+    type: "iprange"
+    associated_interface: ""
+    start_ip: "192.168.1.10"
+    end_ip: "192.168.1.20"
+    
+address_subnet:
+  - address_subnet:
+    name: "Test"
+    type: "ipmask"
+    subnet: "192.168.1.0/24"
+    associated_interface: ""
+
+address_fqdn:
+  - address_fqdn:
+    name: "google.com"
+    type: "fqdn"
+    fqdn: "google.com"
+    associated_interface: ""
+
+address_wildcard_fqdn:
+  - address_wildcard_fqdn:
+    name: "google"
+    type: "wildcard-fqdn"
+    wildcard_fqdn: "*.google.com"
+    associated_interface: ""
+
+policy:
+  - policy:
+    policyid: "1"
+    name: "Test One"
+    action: "accept"
+    srcintf: [{"name":"port1"}]
+    dstintf: [{"name":"wan1"}]
+    srcaddr: [{"name":"TestOne"}]
+    dstaddr: [{"name":"all"}]
+    service: [{"name":"HTTP"}]
+    schedule: "always"
+    nat: "enable"
+    logtraffic: "all"
+    groups: [{"name": "ssl-vpn"}]
+    comment: "Test One for automation"
+
+interface:
+  - interface:
+    name: "port1"
+    ip: "192.168.1.1/24"
+    allow: "ping https ssh fgfm"    
+    role: "lan"
+    type: "physical"
+    member: ""
+    vdom: "root"
+    description: "Test WAN2 Activation"
+
+admin:
+  - admin:
+    name: "Foo"
+    profile: "super_admin"
+    password: "Bar"
+
+service:
+  - service:
+    name: "Test One"
+    protocol: "TCP/UDP/SCTP"
+    tcpport: "14440-14450"
+    udpport: "14440-14450"
+    comment: "Test Service"
+
+schedule:
+  - schedule:
+    name: "Test Schedule"
+    start: "00:00"
+    end: ""
+    day: "monday tuesday"
+
+vip:
+  - vip:
+    name: "Test VIP"
+    type: "static-nat"
+    extintf: "wan1"
+    extip: "8.8.8.8"
+    extaddr: ""
+    mappedip: [{"range": "192.168.1.1"}]
+    mappedaddr: ""
+    portforward: "enable"
+    protocol: "tcp"
+    extport: "443"
+    mappedport: "443"
+    portmap_type: "1-to-1"
+
+
+vpn_ssl_settings:
+  - vpn_ssl_settings:
+    servercert: "Fortinet_Factory"
+    idletimeout: "3600"
+    port: "443"
+    srcintf: [{"name": "wan1"}]
+    pools: [{"name": "SSLVPN_TUNNEL_ADDR1"}]
+    pools6: [{"name": "SSLVPN_TUNNEL_IPv6_ADDR1"}]
+    srcaddr: [{"name": "all"}]
+    srcaddr6: [{"name": "all"}]
+    default_portal: "web-access"
+    authrule: [{"id": "1", "groups": [{"name": "ssl-vpn"}], "portal": "full-access"}]
+
+vpn_ssl_web_portal:
+  - vpn_ssl_web_portal:
+    name: "Test"
+    tunnel_mode: "enable"
+    ip_mode: "range"
+    ipv6_tunnel_mode: "enable"
+    ip_pools: [{"name": "SSLVPN_TUNNEL_ADDR1"}]
+    ipv6_pools: [{"name": "SSLVPN_TUNNEL_IPv6_ADDR1"}]
+    split_tunneling: "enable"
+    ipv6_split_tunneling: "enable"
+    web_mode: "enable"
+
+user:
+  - user:
+    name: "TestUser"
+    type: "password"
+    passwd: ""
+    email_to: ""
+    passwd_policy: ""
+    authtimeout: ""
+
+user_group:
+  - user_group:
+    name: "Test Group"
+    group_type: "firewall"
+    authtimeout: ""
+    member: [{"name": "TestUser"}, {"name": ""}, {"name": ""}]
+    
+syslogd_setting:
+  - syslogd_setting:
+    status: "enable"
+    server: "192.168.1.1"
+    reliable: "enable"
+    port: "514"
+    facility: "syslog"
+    format: "csv"
+    custom_field_name: [{"id": "1", "name": "Test", "custom": "Custom Test"}]
+
+firewall_addrgrp:
+  - firewall_addrgrp:
+    name: "Test"
+    member: [{"name": "citrix"}, {"name": "appstore"}, {"name": "android"}]
+    comment: "Test Address Group"
+
+firewall_service_group:
+  - firewall_service_group:
+    name: "Test"
+    member: [{"name": "HTTP"}, {"name": "HTTPS"}, {"name": "SSH"}]
+    comment: "Test Service Group"

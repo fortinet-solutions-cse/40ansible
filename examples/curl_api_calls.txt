@@ -1,0 +1,14 @@
+Curl API calls to serve as reference for later tests
+
+Insecure
+=========
+curl -X POST   http://192.168.122.40/logincheck   -H 'cache-control: no-cache'   -H 'content-type: application/x-www-form-urlencoded' -d "username=admin&secretkey=&ajax=1" -c CookieFile
+curl --request GET   --url http://192.168.122.40/api/v2/monitor/system/interface/select/   --header 'cache-control: no-cache'   --header 'postman-token: 488ff975-0c96-5e33-26bd-7e8605747491'   -b CookieFile
+
+
+HTTPS
+=====
+curl -X POST   https://192.168.122.40/logincheck   -H 'cache-control: no-cache'   -H 'content-type: application/x-www-form-urlencoded' -d "username=admin&secretkey=&ajax=1" -c CookieFile -k
+curl --request GET   --url https://192.168.122.40/api/v2/monitor/system/interface/select/   --header 'cache-control: no-cache'   --header 'postman-token: 488ff975-0c96-5e33-26bd-7e8605747491'   -b CookieFile -k
+
+

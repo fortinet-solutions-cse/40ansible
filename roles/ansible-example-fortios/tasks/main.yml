@@ -1,0 +1,18 @@
+# Main task list that will be executed with the playbook
+# Feeds upon defaults/main.yml to add parameters to API call
+
+- name: Config custom firewall service
+  fortiosconfig:
+    action: "set"
+    host: "{{ host }}"
+    username: "{{  username}}"
+    password: "{{ password }}"
+    vdom:  "{{  vdom }}"
+    config: "firewall.service custom"
+    config_parameters:
+      name: "{{ item.name }}"
+      protocol: "{{ item.protocol }}"
+      tcp-portrange: "{{ item.tcpport }}"
+      udp-portrange: "{{ item.udpport }}"
+      comment: "{{ item.comment }}"
+  with_items: "{{ service }}"

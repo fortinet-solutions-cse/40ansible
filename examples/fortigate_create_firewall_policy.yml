@@ -1,0 +1,27 @@
+- hosts: localhost
+#  strategy: debug
+  vars:
+   host: "192.168.122.40:443"
+   username: "admin"
+   password: ""
+   vdom: "root"
+  tasks:
+  - name: create firewall policy
+    fortiosconfig:
+     config: "firewall policy"
+     action: "set"
+     host: "{{ host }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     vdom: "{{ vdom }}"
+     config_parameters:
+       policyid: "1"
+       name: "ansible"
+       action: "accept"
+       srcintf: [ {"name": "any"} ]
+       dstintf: [{"name":"any"} ]
+       srcaddr: [{"name":"all"} ]
+       dstaddr: [{"name":"all"}]
+       schedule: "always"
+       service: [{"name":"HTTPS"}]
+       logtraffic: "all"
