@@ -1,20 +1,8 @@
 {
         "ANSIBLE_MODULE_ARGS": {
-            "action": "set",
-            "config": "firewall policy",
+            "action": "ssh",
             "https": "False",
-            "config_parameters": {
-                   "policyid": "1",
-                   "name": "ansible",
-                   "action": "accept",
-                   "srcintf": [ {"name": "any"} ],
-                   "dstintf": [{"name":"any"} ],
-                   "srcaddr": [{"name":"all"} ],
-                   "dstaddr": [{"name":"all"}],
-                   "schedule": "always",
-                   "service": [{"name":"HTTPS"}],
-                   "logtraffic": "all"
-            },
+            "commands": "execute update-now\nget system status\n",
             "host": "192.168.122.40",
             "password": "",
             "username": "admin",
