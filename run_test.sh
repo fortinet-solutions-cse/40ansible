@@ -113,3 +113,7 @@ run_example fortigate_delete_firewall_policy.yml
 remove_waste_files
 
 echo -e "\n\n Results: \n  Success: "${success}"  Failed: "${failed}"\n"
+
+if [ ${failed} -ne 0 ]; then
+  exit -1
+fi

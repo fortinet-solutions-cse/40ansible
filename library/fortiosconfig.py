@@ -723,7 +723,7 @@ def fortigate_config_backup(data):
     version = fos.get_version()
     backup_content = ""
 
-    if 'status' in dir(resp):  # Old versions use this mechanism
+    if 'status' in resp:  # Old versions use this mechanism
         if resp['status'] != 'success':
             return True, False, {
                 'status': resp['status'],
@@ -731,7 +731,7 @@ def fortigate_config_backup(data):
                 'results': resp['results']
             }
 
-        remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
+        remote_filename = '/download?mkey=' + resp['results']['DOWNLOAD_SOURCE_FILE']
         parameters = {'scope': 'global'}
 
         resp = fos.download(functions[0] + '/' + functions[1],
