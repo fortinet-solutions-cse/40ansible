@@ -679,6 +679,7 @@ def check_diff(data):
                         'backup' + remote_filename,
                         vdom=data['vdom'],
                         parameters=parameters)
+    version = fos.get_version()
     logout()
 
     if resp.status_code == 200:
@@ -696,13 +697,13 @@ def check_diff(data):
 
         return False, True, {
             'status': resp.status_code,
-            'version': fos.get_version(),
+            'version': version,
             'diff': differences
         }
     else:
         return True, False, {
             'status': resp.status_code,
-            'version': fos.get_version()
+            'version': version
         }
 
 
@@ -733,6 +734,7 @@ def fortigate_config_backup(data):
                         functions[2] + remote_filename,
                         vdom=data['vdom'],
                         parameters=parameters)
+    version = fos.get_version()
     logout()
 
     if resp.status_code == 200:
@@ -742,13 +744,13 @@ def fortigate_config_backup(data):
         file.close()
         return False, False, {
             'status': resp.status_code,
-            'version': fos.get_version(),
+            'version': version,
             'backup': resp.content
         }
     else:
         return True, False, {
             'status': resp.status_code,
-            'version': fos.get_version()
+            'version': version
         }
 
 
@@ -768,18 +770,19 @@ def fortigate_config_upload(data):
                       data=upload_data,
                       parameters=parameters,
                       files=files)
+    version = fos.get_version()
     logout()
 
     if resp.status_code == 200:
         return False, True, {
             'status': resp.status_code,
-            'version': fos.get_version(),
+            'version': version,
             'result': resp.content
         }
     else:
         return True, False, {
             'status': resp.status_code,
-            'version': fos.get_version(),
+            'version': version,
             'result': resp.content
         }
 
