@@ -16,6 +16,7 @@
      password: "{{ password }}"  
      vdom:  "{{  vdom }}"  
      config: "router static"
+     https: False
      config_parameters:
        seq-num: "8"
        dst: "10.10.32.0 255.255.255.0"
@@ -29,6 +30,7 @@
      username: "{{ username }}"  
      password: "{{ password }}"  
      vdom:  "{{  vdom }}"
+     https: False
      config_parameters:
        wildcard-fqdn: "*.{{ item }}"
        name: "all.{{ item }}"
@@ -44,19 +46,20 @@
      username: "{{ username }}"  
      password: "{{ password }}"  
      vdom:  "{{  vdom }}"
+     https: False
      config_parameters:
-        policyid: "66"
+        policyid: "2"
         name: "ansible"
         json:
-          policyid: "66"
-          name: "ansible"
+          policyid: "2"
+          name: "Created By Ansible"
           action: "accept"
           srcintf: [ {"name": "port1"} ] 
           dstintf: [{"name":"port1"} ]
           srcaddr: [{"name":"all"} ] 
           dstaddr: [{"name":"all"}] 
           schedule: "always" 
-          service:  [{"name":"HTTPS"}] 
+          service:  [{"name":"HTTP"}]
           logtraffic: "all"  
   - name: fortimanager management settings
     fortiosconfig:
@@ -66,6 +69,7 @@
      username: "{{ username }}"  
      password: "{{ password }}"
      vdom: "global"
+     https: False
      config_parameters:
         "type": "fortimanager"
         fmg: "10.210.67.18"
@@ -77,7 +81,8 @@
      username: "{{ username }}"  
      password: "{{ password }}"
      vdom: "global"
-  - name: Get information 
+     https: False
+  - name: Get information
     fortiosconfig:
      config: "system global"
      action: "get"
@@ -85,5 +90,6 @@
      username: "{{ username }}"  
      password: "{{ password }}"
      vdom: "global"
+     https: False
      config_parameters:
        name: "global"

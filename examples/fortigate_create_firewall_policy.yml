@@ -14,6 +14,7 @@
      username: "{{ username }}"
      password: "{{ password }}"
      vdom: "{{ vdom }}"
+     https: False
      config_parameters:
        policyid: "1"
        name: "ansible"

@@ -13,5 +13,6 @@
      username: "{{ username }}"
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
+     https: False
      config_parameters:
       filename: "backup_config_001"

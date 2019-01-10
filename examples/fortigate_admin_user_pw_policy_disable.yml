@@ -1,9 +1,9 @@
 - hosts: localhost
 #  strategy: debug
   vars:
-   host: "localhost:30443"
+   host: "192.168.122.40"
    username: "admin"
-   password: "ABcd123,"
+   password: ""
    vdom: "root"
   tasks:
   - name: set password complexity req
@@ -14,6 +14,7 @@
      username: "{{ username }}"
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
+     https: False
      config_parameters:
       status: "enable"
       apply-to: "admin-password ipsec-preshared-key"
@@ -35,6 +36,7 @@
      username: "{{ username }}"
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
+     https: False
     register: pwd_complexity_resp
 
   - debug: msg="{{ pwd_complexity_resp['meta']['full_response']['results'] }}"
@@ -47,4 +49,4 @@
 
   - fail:
       msg: "Password policy not enabled for admin users"
-  
+

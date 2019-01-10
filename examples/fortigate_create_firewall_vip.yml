@@ -13,6 +13,7 @@
       username: "{{username}}"
       password: "{{password}}"
       config: "firewall vip"
+      https: False
       config_parameters:
         name: "1"
         type: static-nat
