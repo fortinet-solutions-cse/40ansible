@@ -1,17 +1,13 @@
 - hosts: localhost
 #  strategy: debug
   vars:
-#   host: "192.168.122.70"
-   host:  "192.168.115.128"
+   host:  "192.168.122.40"
    username: "admin"
    password: ""
    vdom: "root"
   tasks:
 # If you manage python pip externaly you don't need that version is
 # here to ensure update/downgrade if needed (optional)
-  - pip: 
-     name: fortiosapi
-     version: 0.9.6
   - name: Set static route on the fortigate
     fortiosconfig:
      action: "set"
@@ -23,7 +19,7 @@
      config_parameters:
        seq-num: "8"
        dst: "10.10.32.0 255.255.255.0"
-       device: "port2"
+       device: "port1"
        gateway: "192.168.40.252"
   - name: add multiple firewall address 
     fortiosconfig:
@@ -56,7 +52,7 @@
           name: "ansible"
           action: "accept"
           srcintf: [ {"name": "port1"} ] 
-          dstintf: [{"name":"port2"} ] 
+          dstintf: [{"name":"port1"} ]
           srcaddr: [{"name":"all"} ] 
           dstaddr: [{"name":"all"}] 
           schedule: "always" 
