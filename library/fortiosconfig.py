@@ -720,38 +720,49 @@ def fortigate_config_backup(data):
                        vdom=data['vdom'],
                        parameters=parameters)
 
-    if resp['status'] != 'success':
-        return True, False, {
-            'status': resp['status'],
-            'version': resp['version'],
-            'results': resp['results']
-        }
-
-    remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
-    parameters = {'scope': 'global'}
-
-    resp = fos.download(functions[0] + '/' + functions[1],
-                        functions[2] + remote_filename,
-                        vdom=data['vdom'],
-                        parameters=parameters)
     version = fos.get_version()
-    logout()
+    backup_content = ""
 
-    if resp.status_code == 200:
+    if 'status' in dir(resp):  # Old versions use this mechanism
+        if resp['status'] != 'success':
+            return True, False, {
+                'status': resp['status'],
+                'version': resp['version'],
+                'results': resp['results']
+            }
 
-        file = open(data['config_parameters']['filename'], 'w')
-        file.write(resp.content)
-        file.close()
-        return False, False, {
-            'status': resp.status_code,
-            'version': version,
-            'backup': resp.content
-        }
+        remote_filename = resp['results']['DOWNLOAD_SOURCE_FILE']
+        parameters = {'scope': 'global'}
+
+        resp = fos.download(functions[0] + '/' + functions[1],
+                            functions[2] + remote_filename,
+                            vdom=data['vdom'],
+                            parameters=parameters)
+        if resp.status_code == 200:
+            backup_content = resp.content
+
+    elif 'status_code' in dir(resp):
+        if resp.status_code == 200:
+            backup_content = resp.text
+
     else:
         return True, False, {
-            'status': resp.status_code,
+            'status': 500,
             'version': version
         }
+
+    logout()
+
+    file = open(data['config_parameters']['filename'], 'w')
+    file.write(backup_content)
+    file.close()
+
+    return False, False, {
+        'status': 200,
+        'version': version,
+        'backup': backup_content
+        }
+
 
 
 def fortigate_config_upload(data):
