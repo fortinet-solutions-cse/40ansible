@@ -6,10 +6,10 @@
    password: ""
    vdom: "root"
   tasks:
-  - name: create firewall policy
+  - name: delete firewall policy
     fortiosconfig:
      config: "firewall policy"
-     action: "set"
+     action: "delete"
      host: "{{ host }}"
      username: "{{ username }}"
      password: "{{ password }}"
