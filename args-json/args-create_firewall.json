@@ -1,0 +1,23 @@
+{
+        "ANSIBLE_MODULE_ARGS": {
+            "action": "set",
+            "config": "firewall policy",
+            "https": "False",
+            "config_parameters": {
+                   "policyid": "1",
+                   "name": "ansible",
+                   "action": "accept",
+                   "srcintf": [ {"name": "any"} ],
+                   "dstintf": [{"name":"any"} ],
+                   "srcaddr": [{"name":"all"} ],
+                   "dstaddr": [{"name":"all"}],
+                   "schedule": "always",
+                   "service": [{"name":"HTTPS"}],
+                   "logtraffic": "all"
+            },
+            "host": "192.168.122.40",
+            "password": "",
+            "username": "admin",
+            "vdom": "global"
+        }
+}
