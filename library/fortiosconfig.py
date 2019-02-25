@@ -70,6 +70,19 @@ EXAMPLES = '''
        wildcard-fqdn: "*.test.ansible.com"
        name: "test-ansible"
        type: "wildcard-fqdn"
+  - name: Move policies
+    fortiosconfig: 
+     config: "firewall policy"
+     action: "move"
+     host:  "{{ host }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     vdom:  "{{  vdom }}"
+     config_parameters:
+       key: 1
+       where: "before"
+       reference-key: 2
+
 '''
 
 fos = FortiOSAPI()
@@ -761,8 +774,7 @@ def fortigate_config_backup(data):
         'status': 200,
         'version': version,
         'backup': backup_content
-        }
-
+    }
 
 
 def fortigate_config_upload(data):
@@ -798,6 +810,32 @@ def fortigate_config_upload(data):
         }
 
 
+def fortigate_config_move(data):
+    login(data)
+
+    if not 'key' in data['config_parameters'] or \
+            not 'where' in data['config_parameters'] or \
+            not 'reference-key' in data['config_parameters']:
+        return True, False, {'status': 'Missing attributes: key, where or reference_key are mandatory'}
+
+    functions = data['config'].split()
+
+    resp = fos.move(functions[0], functions[1],
+                    mkey=data['config_parameters']['key'],
+                    where=data['config_parameters']['where'],
+                    reference_key=data['config_parameters']['reference-key'],
+                    vdom=data['vdom'])
+
+    version = fos.get_version()
+    logout()
+
+    meta = {'status': resp['status'], 'http_status': resp['http_status']}
+    if resp['status'] == 'success':
+        return False, True, meta
+    else:
+        return True, False, meta
+
+
 def main():
     fields = {
         "host": {"required": True, "type": "str"},
@@ -813,7 +851,7 @@ def main():
             "choices": ['set', 'delete', 'put',
                         'post', 'get', 'monitor',
                         'ssh', 'backup', 'restore',
-                        'upload'],
+                        'upload', 'move'],
             "type": 'str'
         },
         "config_parameters": {"required": False, "type": "dict"},
@@ -830,7 +868,8 @@ def main():
         "ssh": fortigate_config_ssh,
         "backup": fortigate_config_backup,
         "restore": fortigate_config_upload,
-        "upload": fortigate_config_upload
+        "upload": fortigate_config_upload,
+        "move": fortigate_config_move
     }
 
     module = AnsibleModule(argument_spec=fields,
@@ -852,7 +891,7 @@ def main():
         else:
             module.exit_json(changed=has_changed, meta=result)
     else:
-        module.fail_json(msg="Error in repo", meta=result)
+        module.fail_json(msg="Error", meta=result)
 
 
 if __name__ == '__main__':

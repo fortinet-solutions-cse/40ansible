@@ -1,0 +1,16 @@
+{
+        "ANSIBLE_MODULE_ARGS": {
+            "action": "move",
+            "config": "firewall policy",
+            "https": "False",
+            "config_parameters": {
+                   "key": "1",
+                   "where": "before",
+                   "reference-key": "2"
+            },
+            "host": "192.168.122.40",
+            "password": "",
+            "username": "admin",
+            "vdom": "global"
+        }
+}
