@@ -1,0 +1,9 @@
+- hosts: localhost
+  tasks:
+  - name: Get Assets
+    forticare_get_assets:
+      token: 394923-YOUR-TOKEN-f9394
+      version:
+      serial_number: "FGT%"
+      expire_before: 20220110
+      page_number: 1
