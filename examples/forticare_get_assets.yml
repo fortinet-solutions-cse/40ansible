@@ -2,8 +2,8 @@
   tasks:
   - name: Get Assets
     forticare_get_assets:
-      token: 394923-YOUR-TOKEN-f9394
-      version:
-      serial_number: "FGT%"
-      expire_before: 20220110
+      token: 9EYZ-YOUR-TOKEN-5NCS
+      version: 1.0
+      serial_number: FGT%
+      expire_before: 2019-01-20T10:11:11-8:00
       page_number: 1
