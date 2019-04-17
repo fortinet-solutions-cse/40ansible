@@ -1,0 +1,11 @@
+- hosts: localhost
+  tasks:
+  - name: Register license
+    forticare_register_license:
+      token: 9EYZ-YOUR-TOKEN-5NCS
+      version: V1.0
+      serial_number: FGT90EFKRI3948954
+      license_registration_code: KV045-53543-23432-1321-5434
+      description: FGT0F23
+      additional_info: systemid fgt0f23
+      is_government: false
