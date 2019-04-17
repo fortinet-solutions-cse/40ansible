@@ -1,0 +1,7 @@
+- hosts: localhost
+  tasks:
+  - name: Download license
+    forticare_download_license:
+      token: 9EYZ-YOUR-TOKEN-5NCS
+      version: V1.0
+      serial_number: FGT90EFKRI3948954
