@@ -23,41 +23,37 @@ ANSIBLE_METADATA = {'status': ['preview'],
 
 DOCUMENTATION = '''
 ---
-module: fortios_certificate_crl
-short_description: Certificate Revocation List as a PEM file in Fortinet's FortiOS and FortiGate.
+module: forticare_get_assets
+short_description: Get product list from FortiCare.
 description:
-    - This module is able to configure a FortiGate or FortiOS by allowing the
-      user to set and modify certificate feature and crl category.
-      Examples include all parameters and values need to be adjusted to datasources before usage.
-      Tested with FOS v6.0.2
-version_added: "2.8"
+    - This module is able to query the product list by serial number pattern
+      (regular expression) and the support package expiration date
+version_added: '2.9'
 author:
     - Miguel Angel Munoz (@mamunozgonzalez)
 notes:
-    - Requires fortiosapi library developed by Fortinet
     - Run as a local_action in your playbook
 requirements:
-    - fortiosapi>=0.9.8
+    - None
 options:
     token:
        description:
-            - User token key required to access FortiCare.
+            - User token required to access FortiCare.
        required: true
     version:
         description:
-            - FortiOS or FortiGate username.
+            - API version.
     serial_number:
         description:
-            - FortiOS or FortiGate password.
+            - Serial number to filter results (it accept patters).
     expire_before:
         description:
-            - Virtual domain, among those defined previously. A vdom is a
-              virtual instance of the FortiGate that can be configured and
-              used as a different unit.
+            - Set an expiration date filter. Ignores products expiring
+              after selected date. Format ISO 8601
     page_number:
         description:
-            - Indicates if the requests towards FortiGate must use HTTPS
-              protocol
+            - If multiple products are returned, paginate the result and
+              select the desired page. Page size = 25.
 '''
 
 EXAMPLES = '''
@@ -67,7 +63,7 @@ EXAMPLES = '''
     forticare_get_assets:
       token: 394923-YOUR-TOKEN-f9394
       version:
-      serial_number: "FGT%"
+      serial_number: FGT%
       expire_before: 20220110
       page_number: 1
 '''
@@ -81,31 +77,28 @@ import requests
 def forticare_get_assets(data):
 
     body_data = { 'Token': data['token']}
-    if data['version']:
+    if 'version' in data:
         body_data['Version'] = data['version']
-    if data['serial_number']:
+    if 'serial_number' in data:
         body_data['Serial_number'] = data['serial_number']
-    if data['expire_before']:
+    if 'expire_before' in data:
         body_data['Expire_before'] = data['expire_before']
-    if data['page_number']:
+    if 'page_number' in data:
         body_data['Page_Number'] = data['page_number']
 
-    url = 'https://support.fortinet.com/RegistrationAPI/FCWS_RegistrationService.svc/REST/REST_GetAssets'
+    url = 'https://support.fortinet.com/FCWS_RegistrationService.svc/REST/REST_GetAssets'
 
     r = requests.post(url, body_data, verify=True)
-
-    print(r)
     return r.status_code != 200, False, r.content
-
 
 
 def main():
     fields = {
-        "token": {"required": True, "type": "str", "no_log": True},
-        "version": {"required": False, "type": "str"},
-        "serial_number": {"required": False, "type": "str"},
-        "expire_before": {"required": False, "type": "str"},
-        "page_number": {"required": False, "type": "str"}
+        'token': {'required': True, 'type': 'str', 'no_log': True},
+        'version': {'required': False, 'type': 'str'},
+        'serial_number': {'required': False, 'type': 'str'},
+        'expire_before': {'required': False, 'type': 'str'},
+        'page_number': {'required': False, 'type': 'str'}
     }
 
     module = AnsibleModule(argument_spec=fields,
@@ -116,7 +109,7 @@ def main():
     if not is_error:
         module.exit_json(changed=has_changed, meta=result)
     else:
-        module.fail_json(msg="Error in repo", meta=result)
+        module.fail_json(msg='Error in repo', meta=result)
 
 
 if __name__ == '__main__':
