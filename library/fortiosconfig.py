@@ -32,8 +32,9 @@ import re
 DOCUMENTATION = '''
 ---
 module: fortiosconfig
-short_description: Module to configure all aspects of \
-fortinet products using the REST API
+short_description: Configure FortiOS using the REST API
+description:
+    - Module to configure all aspects of FortiOS using the REST API
 '''
 
 EXAMPLES = '''
