@@ -1,0 +1,15 @@
+{
+  "ANSIBLE_MODULE_ARGS": {
+    "token": "XE0V-UOI7-NRX7-ER7G-ER9N-RJWE-9WF7-QE9V",
+    "version": "1.0",
+    "registration_units": [{
+      "serial_number": "FMG-3K3407400133",
+          "contract_number": "",
+          "description": "Backup device",
+          "asset_group_ids": "",
+          "replaced_serial_number": "",
+          "additional_info": "10.1.1.1",
+          "is_government": false
+    }]
+  }
+}
