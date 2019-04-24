@@ -31,6 +31,8 @@ description:
       When registering products/contracts via the registration API, the system will
       return the unit's warranty and contract, for product and contract registration
       (respectively).
+      Please note that this module is not idempotent since products already registered
+      will return a failure in the request
 
 version_added: '2.9'
 author:
@@ -80,68 +82,106 @@ EXAMPLES = '''
   tasks:
   - name: Register units
     forticare_register_units:
-      token: 9EYZ-YOUR-TOKEN-5NCS
+      token: YOUR_TOKEN
       version: 1.0
-      register_units:
-        - serial_number: FGT1
-          contract_number: 1342
-          description: Test
-          asset_group_ids: [1,2,3]
-          replaced_serial_number: 20220110
-          additional_info: systemid fgt0f23
+      registration_units:
+        - serial_number: FMG-3K3407400133
+          contract_number: ""
+          description: Backup device
+          asset_group_ids: ""
+          replaced_serial_number: ""
+          additional_info: "10.1.1.1"
           is_government: false
 '''
 
 RETURN = '''
+status_code:
+  description: HTTP status code given by FortiCare server for last API operation executed.
+  returned: always
+  type: integer
+  sample: 200
+reason:
+  description: Status explanation or reason of the failure. Returns 'OK' when successful
+  returned: always
+  type: str
+  sample: 'OK'
+content:
+  description: Detailed information as dictionary format about the execution of the method and results of the query.
+  returned: always
+  type: str
+  sample: '{"Build": "1.0", "Error": null, "Message": "Success", "Status": 0, "Token": "...", "Version": "1.0", "Assets": [....]'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import requests
+import json
+import traceback
 
 
 def forticare_register_units(data):
     body_data = {'Token': data['token']}
-    if 'version' in data:
+    if 'version' in data and data['version']:
         body_data['Version'] = data['version']
+    body_data['RegistrationUnits'] = []
 
-    for unit in data['register_units']:
+    for unit in data['registration_units']:
         unit_data = {'Serial_Number': unit['serial_number']}
-        if 'contract_number' in unit:
+        if 'contract_number' in unit and unit['contract_number']:
             unit_data['Contract_Number'] = unit['contract_number']
-        if 'description' in unit:
+        if 'description' in unit and unit['description']:
             unit_data['Description'] = unit['description']
-        if 'asset_group_ids' in unit:
+        if 'asset_group_ids' in unit and unit['asset_group_ids']:
             unit_data['Asset_Group_IDS'] = unit['asset_group_ids']
-        if 'replaced_serial_number' in unit:
+        if 'replaced_serial_number' in unit and unit['replaced_serial_number']:
             unit_data['Replaced_Serial_Number'] = unit['replaced_serial_number']
-        if 'additional_info' in unit:
+        if 'additional_info' in unit and unit['additional_info']:
             unit_data['Additional_Info'] = unit['additional_info']
-        if 'is_government' in unit:
+        if 'is_government' in unit and unit['is_government']:
             unit_data['Is_Government'] = unit['is_government']
 
-    url = 'https://support.fortinet.com/RegistrationAPI/FCWS_RegistrationService.svc/REST/REST_RegisterUnits'
+        body_data['RegistrationUnits'].append(unit_data)
 
-    r = requests.post(url, body_data, verify=True)
+    url = 'https://support.fortinet.com/ES/FCWS_RegistrationService.svc/REST/REST_RegisterUnits'
 
-    return r.status_code != 200, False, r.content
+    try:
+        r = requests.post(url, json=body_data, timeout=10, verify=True)
+
+    except requests.exceptions.Timeout:
+        return True, False, {"status_code": None,
+                             "reason": "Timeout contacting FortiCare server",
+                             "content": None}
+    except Exception as e:
+        return True, False, {"status_code": None,
+                             "reason": "General exception when running POST on FortiCare server",
+                             "content": str(e.__traceback__) + str(traceback.format_exc())}
+
+    content = json.loads(r.content) if r and 'content' in dir(r) else None
+
+    result = {"status_code": r.status_code if r and 'status_code' in dir(r) else None,
+              "reason": r.reason if r and 'reason' in dir(r) else None,
+              "content": content}
+
+    success = r.status_code != 200 or content['Status'] != 0 if content else True
+    return success, not success, result
 
 
 def main():
     fields = {
         'token': {'required': True, 'type': 'str', 'no_log': True},
         'version': {'required': False, 'type': 'str'},
-        'register_units': {'required': True,
-                           'type': 'list',
-                           'options': {
-                               'serial_number': {'required': True, 'type': 'str'},
-                               'contract_number': {'required': False, 'type': 'str'},
-                               'description': {'required': False, 'type': 'str'},
-                               'asset_group_ids': {'required': False, 'type': 'list'},
-                               'replaced_serial_number': {'required': False, 'type': 'str'},
-                               'additional_info': {'required': False, 'type': 'str'},
-                               'is_government': {'required': False, 'type': 'bool', 'default': False}
-                           }
-                           }
+        'registration_units': {
+            'required': True,
+            'type': 'list',
+            'options': {
+                'serial_number': {'required': True, 'type': 'str'},
+                'contract_number': {'required': False, 'type': 'str'},
+                'description': {'required': False, 'type': 'str'},
+                'asset_group_ids': {'required': False, 'type': 'list'},
+                'replaced_serial_number': {'required': False, 'type': 'str'},
+                'additional_info': {'required': False, 'type': 'str'},
+                'is_government': {'required': False, 'type': 'bool', 'default': False}
+            }
+        }
     }
     module = AnsibleModule(argument_spec=fields,
                            supports_check_mode=False)
