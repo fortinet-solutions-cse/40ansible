@@ -27,7 +27,7 @@ module: forticare_get_assets
 short_description: Get product list from FortiCare.
 description:
     - This module is able to query the product list by serial number pattern
-      (regular expression) and the support package expiration date
+      and the support package expiration date
 version_added: '2.9'
 author:
     - Miguel Angel Munoz (@mamunozgonzalez)
@@ -45,7 +45,7 @@ options:
             - API version.
     serial_number:
         description:
-            - Serial number to filter results (it accept patters).
+            - Serial number to filter results (it accept patterns).
     expire_before:
         description:
             - Set an expiration date filter. Ignores products expiring
@@ -53,7 +53,7 @@ options:
     page_number:
         description:
             - If multiple products are returned, paginate the result and
-              select the desired page. Page size = 25.
+              select the desired page. Default page size = 25.
 '''
 
 EXAMPLES = '''
@@ -61,35 +61,73 @@ EXAMPLES = '''
   tasks:
   - name: Get Assets
     forticare_get_assets:
-      token: 394923-YOUR-TOKEN-f9394
-      version:
-      serial_number: FGT%
-      expire_before: 20220110
+      token: YOUR_TOKEN
+      version: 1.0
+      serial_number: FGVM32%
+      expire_before: "2029-09-20T10:11:11-8:00"
       page_number: 1
 '''
 
 RETURN = '''
+status_code:
+  description: HTTP status code given by FortiCare server for last API operation executed. 
+  returned: always
+  type: integer
+  sample: 200
+reason:
+  description: Status explanation or reason of the failure. Returns 'OK' when successful
+  returned: always
+  type: str
+  sample: 'OK'
+content:
+  description: Detailed information as dictionary format about the execution of the method and results of the query.
+  returned: always
+  type: str
+  sample: '{"Build": "1.0", "Error": null, "Message": "Success", "Status": 0, "Token": "...", "Version": "1.0", "Assets": [....]'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import requests
+import json
+import traceback
+
 
 def forticare_get_assets(data):
 
     body_data = { 'Token': data['token']}
-    if 'version' in data:
+    if 'version' in data and data['version']:
         body_data['Version'] = data['version']
-    if 'serial_number' in data:
-        body_data['Serial_number'] = data['serial_number']
-    if 'expire_before' in data:
-        body_data['Expire_before'] = data['expire_before']
-    if 'page_number' in data:
+
+    if 'serial_number' in data and data['serial_number']:
+        body_data['Serial_Number'] = data['serial_number']
+
+    if 'expire_before' in data and data['expire_before']:
+        body_data['Expire_Before'] = data['expire_before']
+
+    if 'page_number' in data and data['page_number']:
         body_data['Page_Number'] = data['page_number']
 
-    url = 'https://support.fortinet.com/FCWS_RegistrationService.svc/REST/REST_GetAssets'
+    url = 'https://support.fortinet.com/ES/FCWS_RegistrationService.svc/REST/REST_GetAssets'
 
-    r = requests.post(url, body_data, verify=True)
-    return r.status_code != 200, False, r.content
+    try:
+        r = requests.post(url, json=body_data, timeout=10, verify=True)
+
+    except requests.exceptions.Timeout:
+        return True, False, {"status_code": None,
+                             "reason": "Timeout contacting FortiCare server",
+                             "content": None}
+    except Exception as e:
+        return True, False, {"status_code": None,
+                             "reason": "General exception when running POST on FortiCare server",
+                             "content": str(e.__traceback__) + str(traceback.format_exc())}
+
+    content = json.loads(r.content) if r and 'content' in dir(r) else None
+
+    result = {"status_code": r.status_code if r and 'status_code' in dir(r) else None,
+              "reason": r.reason if r and 'reason' in dir(r) else None,
+              "content": content}
+
+    return r.status_code != 200 or content['Status'] != 0 if content else True, False, result
 
 
 def main():
