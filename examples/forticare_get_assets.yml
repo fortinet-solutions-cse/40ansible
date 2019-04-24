@@ -2,8 +2,19 @@
   tasks:
   - name: Get Assets
     forticare_get_assets:
-      token: 9EYZ-YOUR-TOKEN-5NCS
+      token: YOUR_TOKEN
       version: 1.0
-      serial_number: FGT%
-      expire_before: 2019-01-20T10:11:11-8:00
+      serial_number: FGVM32%
+      expire_before: "2029-09-20T10:11:11-8:00"
       page_number: 1
+    register: output
+  - debug:
+      var: output
+  - debug:
+      var: output.meta.status_code
+  - debug:
+      var: output.meta.reason
+  - debug:
+      var: output.meta.content
+  - debug:
+      var: output.meta.content.Status
