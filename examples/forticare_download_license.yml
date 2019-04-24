@@ -2,6 +2,20 @@
   tasks:
   - name: Download license
     forticare_download_license:
-      token: 9EYZ-YOUR-TOKEN-5NCS
-      version: V1.0
-      serial_number: FGT90EFKRI3948954
+      token: YOUR_TOKEN
+      version: 1.0
+      serial_number: FGVM32TM19090019
+    register: output
+  - debug:
+      var: output
+  - debug:
+      var: output.meta.status_code
+  - debug:
+      var: output.meta.reason
+  - debug:
+      var: output.meta.content
+  - debug:
+      var: output.meta.content.Status
+  - debug:
+      var: output.meta.content.License_File
+  - copy: content="{{ output.meta.content.License_File }}" dest=./license.txt
