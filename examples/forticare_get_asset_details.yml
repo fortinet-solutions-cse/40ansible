@@ -2,6 +2,17 @@
   tasks:
   - name: Get Asset Details
     forticare_get_asset_details:
-      token: 9EYZ-YOUR-TOKEN-5NCS
-      version: V1.0
-      serial_number: FGT135535645
+      token: YOUR_TOKEN
+      version: 1.0
+      serial_number: FGVMUL0000151632
+    register: output
+  - debug:
+      var: output
+  - debug:
+      var: output.meta.status_code
+  - debug:
+      var: output.meta.reason
+  - debug:
+      var: output.meta.content
+  - debug:
+      var: output.meta.content.Status
