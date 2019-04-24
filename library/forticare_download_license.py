@@ -57,16 +57,33 @@ EXAMPLES = '''
   tasks:
   - name: Download license
     forticare_download_license:
-      token: 9EYZ-YOUR-TOKEN-5NCS
-      version: V1.0
+      token: YOUR_TOKEN
+      version: 1.0
       serial_number: FGT90EFKRI3948954
 '''
 
 RETURN = '''
+status_code:
+  description: HTTP status code given by FortiCare server for last API operation executed.
+  returned: always
+  type: integer
+  sample: 200
+reason:
+  description: Status explanation or reason of the failure. Returns 'OK' when successful
+  returned: always
+  type: str
+  sample: 'OK'
+content:
+  description: Detailed information as dictionary format about the execution of the method and results of the query.
+  returned: always
+  type: str
+  sample: '{"Build": "1.0", "Error": null, "Message": "Success", "Status": 0, "Token": "...", "Version": "1.0", "Assets": [....]'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import requests
+import json
+import traceback
 
 
 def forticare_download_license(data):
@@ -74,11 +91,27 @@ def forticare_download_license(data):
                  'Version': data['version'],
                  'Serial_Number': data['serial_number']}
 
-    url = 'https://support.fortinet.com/RegistrationAPI/FCWS_RegistrationService.svc/REST/REST_DownloadLicense'
+    url = 'https://support.fortinet.com/ES/FCWS_RegistrationService.svc/REST/REST_DownloadLicense'
 
-    r = requests.post(url, body_data, verify=True)
+    try:
+        r = requests.post(url, json=body_data, timeout=10, verify=True)
 
-    return r.status_code != 200, False, r.content
+    except requests.exceptions.Timeout:
+        return True, False, {"status_code": None,
+                             "reason": "Timeout contacting FortiCare server",
+                             "content": None}
+    except Exception as e:
+        return True, False, {"status_code": None,
+                             "reason": "General exception when running POST on FortiCare server",
+                             "content": str(e.__traceback__) + str(traceback.format_exc())}
+
+    content = json.loads(r.content) if r and 'content' in dir(r) else None
+
+    result = {"status_code": r.status_code if r and 'status_code' in dir(r) else None,
+              "reason": r.reason if r and 'reason' in dir(r) else None,
+              "content": content}
+
+    return r.status_code != 200 or content['Status'] != 0 if content else True, False, result
 
 
 def main():
