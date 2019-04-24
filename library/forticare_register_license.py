@@ -51,7 +51,7 @@ options:
             - Product serial number. If given, the license will be registered under it
     license_registration_code:
         description:
-            - License registration code 
+            - License registration code
         required: true
     description:
         description:
@@ -69,20 +69,37 @@ EXAMPLES = '''
   tasks:
   - name: Register license
     forticare_register_license:
-      token: 9EYZ-YOUR-TOKEN-5NCS
-      version: V1.0
+      token: YOUR_TOKEN
+      version: 1.0
       serial_number: FGT90EFKRI3948954
-      license_registration_code: KV045-53543-23432-1321-5434
+      license_registration_code: XXXXX-XXXXX-XXXXX-XXXX-XXXXX
       description: FGT0F23
       additional_info: systemid fgt0f23
       is_government: false
 '''
 
 RETURN = '''
+status_code:
+  description: HTTP status code given by FortiCare server for last API operation executed.
+  returned: always
+  type: integer
+  sample: 200
+reason:
+  description: Status explanation or reason of the failure. Returns 'OK' when successful
+  returned: always
+  type: str
+  sample: 'OK'
+content:
+  description: Detailed information as dictionary format about the execution of the method and results of the query.
+  returned: always
+  type: str
+  sample: '{"Build": "1.0", "Error": null, "Message": "Success", "Status": 0, "Token": "...", "Version": "1.0", "Assets": [....]'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import requests
+import json
+import traceback
 
 
 def forticare_register_license(data):
@@ -90,20 +107,40 @@ def forticare_register_license(data):
                  'Version': data['version'],
                  'License_Registration_Code': data['license_registration_code']}
 
-    if 'serial_number' in data:
+    if 'serial_number' in data and data['serial_number']:
         body_data['Serial_Number'] = data['serial_number']
-    if 'description' in data:
+
+    if 'description' in data and data['description']:
         body_data['Description'] = data['description']
-    if 'additional_info' in data:
+
+    if 'additional_info' in data and data['additional_info']:
         body_data['Additional_Info'] = data['additional_info']
-    if 'is_government' in data:
+
+    if 'is_government' in data and data['is_government']:
         body_data['Is_Government'] = data['is_government']
 
-    url = 'https://support.fortinet.com/RegistrationAPI/FCWS_RegistrationService.svc/REST/REST_RegisterLicense'
+    url = 'https://support.fortinet.com/ES/FCWS_RegistrationService.svc/REST/REST_RegisterLicense'
 
-    r = requests.post(url, body_data, verify=True)
+    try:
+        r = requests.post(url, json=body_data, timeout=10, verify=True)
 
-    return r.status_code != 200, False, r.content
+    except requests.exceptions.Timeout:
+        return True, False, {"status_code": None,
+                             "reason": "Timeout contacting FortiCare server",
+                             "content": None}
+    except Exception as e:
+        return True, False, {"status_code": None,
+                             "reason": "General exception when running POST on FortiCare server",
+                             "content": str(e.__traceback__) + str(traceback.format_exc())}
+
+    content = json.loads(r.content) if r and 'content' in dir(r) else None
+
+    result = {"status_code": r.status_code if r and 'status_code' in dir(r) else None,
+              "reason": r.reason if r and 'reason' in dir(r) else None,
+              "content": content}
+
+    success = r.status_code != 200 or content['Status'] != 0 if content else True
+    return success, not success, result
 
 
 def main():
