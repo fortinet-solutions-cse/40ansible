@@ -55,29 +55,66 @@ EXAMPLES = '''
   tasks:
   - name: Get Asset Details
     forticare_get_asset_details:
-      token: 394A-YOUR-TOKEN-F594
-      version: V1.0
+      token: YOUR_TOKEN
+      version: 1.0
       serial_number: FGT90D1234567890
 '''
 
 RETURN = '''
+status_code:
+  description: HTTP status code given by FortiCare server for last API operation executed.
+  returned: always
+  type: integer
+  sample: 200
+reason:
+  description: Status explanation or reason of the failure. Returns 'OK' when successful
+  returned: always
+  type: str
+  sample: 'OK'
+content:
+  description: Detailed information as dictionary format about the execution of the method and results of the query.
+  returned: always
+  type: str
+  sample: '{"Build": "1.0", "Error": null, "Message": "Success", "Status": 0, "Token": "...", "Version": "1.0", "Assets": [....]'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import requests
+import json
+import traceback
+
 
 def forticare_get_asset_details(data):
 
-    body_data = { 'Token': data['token']}
-    if 'version' in data:
+    body_data = {'Token': data['token']}
+    if 'version' in data and data['version']:
         body_data['Version'] = data['version']
-    if 'serial_number' in data:
-        body_data['Serial_number'] = data['serial_number']
 
-    url = 'https://support.fortinet.com/RegistrationAPI/FCWS_RegistrationService.svc/REST/REST_GetAssetDetails'
+    if 'serial_number' in data and data['serial_number']:
+        body_data['Serial_Number'] = data['serial_number']
 
-    r = requests.post(url, body_data, verify=True)
-    return r.status_code != 200, False, r.content
+    url = 'https://support.fortinet.com/ES/FCWS_RegistrationService.svc/REST/REST_GetAssetDetails'
+
+    try:
+        r = requests.post(url, json=body_data, timeout=10, verify=True)
+
+    except requests.exceptions.Timeout:
+        return True, False, {"status_code": None,
+                             "reason": "Timeout contacting FortiCare server",
+                             "content": None}
+
+    except Exception as e:
+        return True, False, {"status_code": None,
+                             "reason": "General exception when running POST on FortiCare server",
+                             "content": str(e.__traceback__) + str(traceback.format_exc())}
+
+    content = json.loads(r.content) if r and 'content' in dir(r) else None
+
+    result = {"status_code": r.status_code if r and 'status_code' in dir(r) else None,
+              "reason": r.reason if r and 'reason' in dir(r) else None,
+              "content": content}
+
+    return r.status_code != 200 or content['Status'] != 0 if content else True, False, result
 
 
 def main():
