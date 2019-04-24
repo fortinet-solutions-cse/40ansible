@@ -2,13 +2,24 @@
   tasks:
   - name: Register units
     forticare_register_units:
-      token: 9EYZ-YOUR-TOKEN-5NCS
+      token: YOUR_TOKEN
       version: 1.0
-      register_units:
-        - serial_number: FGT1K8GNFK82471MN
-          contract_number: 1342
-          description: Test
-          asset_group_ids: [1,2,3]
-          replaced_serial_number: FG20220110
-          additional_info: systemid fgt0f23
+      registration_units:
+        - serial_number: FMG-3K3407400109
+          contract_number: ""
+          description: Backup device
+          asset_group_ids: ""
+          replaced_serial_number: ""
+          additional_info: "10.1.1.1"
           is_government: false
+    register: output
+  - debug:
+      var: output
+  - debug:
+      var: output.meta.status_code
+  - debug:
+      var: output.meta.reason
+  - debug:
+      var: output.meta.content
+  - debug:
+      var: output.meta.content.Status
