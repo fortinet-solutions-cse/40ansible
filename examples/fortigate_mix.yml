@@ -75,9 +75,9 @@
         fmg: "10.210.67.18"
   - name: system resource
     fortiosconfig:
-     config: "system vdom-resource"
-     action: "monitor"
-     host:  "{{ host }}"  
+     config: "system vdom-resource select"
+     action: "get"
+     host:  "{{ host }}"
      username: "{{ username }}"  
      password: "{{ password }}"
      vdom: "global"

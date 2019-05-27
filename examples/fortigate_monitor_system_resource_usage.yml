@@ -9,7 +9,7 @@
     - name: Get system resource usage
       fortiosconfig:
        config: "system resource usage"
-       action: "monitor"
+       action: "get"
        host:  "{{ host }}"
        username: "{{ username }}"
        password: "{{ password }}"
