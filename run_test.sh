@@ -109,6 +109,9 @@ wait_until_fgt_validates_license
 run_example fortigate_disable_https_redirect.yml
 run_example fortigate_create_firewall_policy.yml
 run_example fortigate_delete_firewall_policy.yml
+# Uncomment after 6.2.1 release, when vpn certificate is fixed in REST API
+#run_example fortigate_vpn_certificate_csr_generate.yml
+#run_example fortigate_vpn_certificate_csr_delete.yml
 
 remove_waste_files
 

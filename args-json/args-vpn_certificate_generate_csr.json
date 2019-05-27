@@ -1,0 +1,23 @@
+{
+        "ANSIBLE_MODULE_ARGS": {
+            "action": "post",
+            "config": "vpn-certificate csr generate",
+            "https": "True",
+            "config_parameters": {
+               "certname": "mycert",
+               "keytype": "rsa",
+               "keysize": 4096,
+               "subject": "sub2",
+               "org": "Fortinet",
+               "city": "Sunnyvale",
+               "state": "California",
+               "countrycode": "US",
+               "email": "admin@fortinet.com",
+               "sub_alt_name": "sub_alt"
+            },
+            "host": "192.168.122.40",
+            "password": "",
+            "username": "admin",
+            "vdom": "global"
+        }
+}
