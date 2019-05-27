@@ -35,6 +35,7 @@ module: fortiosconfig
 short_description: Configure FortiOS using the REST API
 description:
     - Module to configure all aspects of FortiOS using the REST API
+      Note some Monitor calls are also included, with some limitations (idempotency does not apply)
 '''
 
 EXAMPLES = '''
@@ -95,9 +96,7 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
-AVAILABLE_CONF = [
-    'system resource usage',
-    'system vdom-resource',
+CONFIG_CALLS = [
     'alertemail setting',
     'antivirus heuristic',
     'antivirus profile',
@@ -303,8 +302,6 @@ AVAILABLE_CONF = [
     'system auto-script',
     'system central-management',
     'system cluster-sync',
-    'system config backup',
-    'system config restore',
     'system console',
     'system custom-language',
     'system ddns',
@@ -365,7 +362,6 @@ AVAILABLE_CONF = [
     'system vdom-sflow',
     'system virtual-wan-link',
     'system virtual-wire-pair',
-    'system vmlicense upload',
     'system wccp',
     'system zone',
     'user adgrp',
@@ -455,6 +451,19 @@ AVAILABLE_CONF = [
     'wireless-controller wtp-profile']
 
 
+# Note most "monitor calls" are not idempotent due to its own operational nature. They are
+# 'one shot' operations that do not fit well as Ansible. However they are included here
+# for certain scenarios where using Ansible is mandatory for everything
+
+MONITOR_CALLS = [
+    'system config backup',
+    'system config restore',
+    'system resource usage',
+    'system vdom-resource select',
+    'system vmlicense upload',
+    'vpn-certificate csr generate'
+]
+
 def json2obj(data):
     return json.loads(data, object_hook=lambda d: Namespace(**d))
 
@@ -487,7 +496,7 @@ def logout():
     fos.logout()
 
 
-def fortigate_config_put(data):
+def fortigate_put(data):
     login(data)
 
     functions = data['config'].split()
@@ -513,6 +522,17 @@ def fortigate_config_put(data):
         return True, False, meta
 
 
+def fortigate_post(data):
+    resource = data['config']
+    if resource in CONFIG_CALLS:
+        return fortigate_config_post(data)
+    elif resource in MONITOR_CALLS:
+        return fortigate_monitor_post(data)
+    else:
+        return True, False, {'status': 'Error: Resource does not belong to config or monitor',
+                             'http_status': '500'}
+
+
 def fortigate_config_post(data):
     login(data)
 
@@ -529,7 +549,23 @@ def fortigate_config_post(data):
         return True, False, meta
 
 
-def fortigate_config_set(data):
+def fortigate_monitor_post(data):
+    login(data)
+
+    functions = data['config'].split()
+
+    resp = fos.monitor_post(functions[0], functions[1] + '/' + functions[2], vdom=data['vdom'],
+                    data=data['config_parameters'])
+    logout()
+
+    meta = {"status": resp['status'], 'http_status': 200 if resp['status'] == 200 else 500}
+    if resp['status'] == "success":
+        return False, True, meta
+    else:
+        return True, False, meta
+
+
+def fortigate_set(data):
     login(data)
 
     functions = data['config'].split()
@@ -545,6 +581,17 @@ def fortigate_config_set(data):
         return False, False, meta
     else:
         return True, False, meta
+
+
+def fortigate_get(data):
+    resource = data['config']
+    if resource in CONFIG_CALLS:
+        return fortigate_config_get(data)
+    elif resource in MONITOR_CALLS:
+        return fortigate_monitor_get(data)
+    else:
+        return True, False, {'status': 'Error: Resource does not belong to config or monitor',
+                             'http_status': '500'}
 
 
 def fortigate_config_get(data):
@@ -574,14 +621,14 @@ def fortigate_config_get(data):
         }
 
 
-def fortigate_config_monitor(data):
+def fortigate_monitor_get(data):
     login(data)
 
     functions = data['config'].split()
 
     path, name = extract_path_and_name(functions)
 
-    resp = fos.monitor(path, name, vdom=data['vdom'])
+    resp = fos.monitor_get(path, name, vdom=data['vdom'])
     logout()
 
     if resp['status'] == "success":
@@ -593,7 +640,7 @@ def fortigate_config_monitor(data):
             "status": resp['status'], 'version': resp['version']}
 
 
-def fortigate_config_del(data):
+def fortigate_del(data):
     vdom = data['vdom']
     login(data)
 
@@ -616,7 +663,7 @@ def fortigate_config_del(data):
         return True, False, meta
 
 
-def fortigate_config_ssh(data):
+def fortigate_ssh(data):
     host = data['host']
     username = data['username']
     password = data['password']
@@ -674,7 +721,7 @@ def check_diff(data):
     parameters = {'destination': 'file',
                   'scope': 'global'}
 
-    resp = fos.monitor('system/config',
+    resp = fos.monitor_get('system/config',
                        'backup',
                        vdom=data['vdom'],
                        parameters=parameters)
@@ -721,7 +768,7 @@ def check_diff(data):
         }
 
 
-def fortigate_config_backup(data):
+def fortigate_backup(data):
     login(data)
 
     functions = data['config'].split()
@@ -729,7 +776,7 @@ def fortigate_config_backup(data):
     parameters = {'destination': 'file',
                   'scope': 'global'}
 
-    resp = fos.monitor(functions[0] + '/' + functions[1],
+    resp = fos.monitor_get(functions[0] + '/' + functions[1],
                        functions[2],
                        vdom=data['vdom'],
                        parameters=parameters)
@@ -778,7 +825,7 @@ def fortigate_config_backup(data):
     }
 
 
-def fortigate_config_upload(data):
+def fortigate_upload(data):
     login(data)
 
     if data['diff'] == True:
@@ -811,7 +858,7 @@ def fortigate_config_upload(data):
         }
 
 
-def fortigate_config_move(data):
+def fortigate_move(data):
     login(data)
 
     if not 'key' in data['config_parameters'] or \
@@ -844,7 +891,7 @@ def main():
         "username": {"required": True, "type": "str"},
         "description": {"required": False, "type": "str"},
         "vdom": {"required": False, "type": "str", "default": "root"},
-        "config": {"required": False, "choices": AVAILABLE_CONF, "type": "str"},
+        "config": {"required": False, "choices": CONFIG_CALLS + MONITOR_CALLS, "type": "str"},
         "mkey": {"required": False, "type": "str"},
         "https": {"required": False, "type": "bool", "default": "True"},
         "action": {
@@ -860,17 +907,17 @@ def main():
     }
 
     choice_map = {
-        "set": fortigate_config_set,
-        "delete": fortigate_config_del,
-        "put": fortigate_config_put,
-        "post": fortigate_config_post,
-        "get": fortigate_config_get,
-        "monitor": fortigate_config_monitor,
-        "ssh": fortigate_config_ssh,
-        "backup": fortigate_config_backup,
-        "restore": fortigate_config_upload,
-        "upload": fortigate_config_upload,
-        "move": fortigate_config_move
+        "set": fortigate_set,
+        "delete": fortigate_del,
+        "put": fortigate_put,
+        "post": fortigate_post,
+        "get": fortigate_get,
+        "monitor": fortigate_monitor_get,  # deprecated
+        "ssh": fortigate_ssh,
+        "backup": fortigate_backup,
+        "restore": fortigate_upload,
+        "upload": fortigate_upload,
+        "move": fortigate_move
     }
 
     module = AnsibleModule(argument_spec=fields,
