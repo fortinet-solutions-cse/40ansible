@@ -525,15 +525,15 @@ def fortigate_put(data):
 def fortigate_post(data):
     resource = data['config']
     if resource in CONFIG_CALLS:
-        return fortigate_config_post(data)
+        return _fortigate_config_post(data)
     elif resource in MONITOR_CALLS:
-        return fortigate_monitor_post(data)
+        return _fortigate_monitor_post(data)
     else:
         return True, False, {'status': 'Error: Resource does not belong to config or monitor',
                              'http_status': '500'}
 
 
-def fortigate_config_post(data):
+def _fortigate_config_post(data):
     login(data)
 
     functions = data['config'].split()
@@ -549,12 +549,12 @@ def fortigate_config_post(data):
         return True, False, meta
 
 
-def fortigate_monitor_post(data):
+def _fortigate_monitor_post(data):
     login(data)
 
     functions = data['config'].split()
 
-    resp = fos.monitor_post(functions[0], functions[1] + '/' + functions[2], vdom=data['vdom'],
+    resp = fos.exec(functions[0], functions[1] + '/' + functions[2], vdom=data['vdom'],
                     data=data['config_parameters'])
     logout()
 
@@ -586,15 +586,15 @@ def fortigate_set(data):
 def fortigate_get(data):
     resource = data['config']
     if resource in CONFIG_CALLS:
-        return fortigate_config_get(data)
+        return _fortigate_config_get(data)
     elif resource in MONITOR_CALLS:
-        return fortigate_monitor_get(data)
+        return _fortigate_monitor_get(data)
     else:
         return True, False, {'status': 'Error: Resource does not belong to config or monitor',
                              'http_status': '500'}
 
 
-def fortigate_config_get(data):
+def _fortigate_config_get(data):
     login(data)
 
     functions = data['config'].split()
@@ -621,14 +621,14 @@ def fortigate_config_get(data):
         }
 
 
-def fortigate_monitor_get(data):
+def _fortigate_monitor_get(data):
     login(data)
 
     functions = data['config'].split()
 
     path, name = extract_path_and_name(functions)
 
-    resp = fos.monitor_get(path, name, vdom=data['vdom'])
+    resp = fos.monitor(path, name, vdom=data['vdom'])
     logout()
 
     if resp['status'] == "success":
@@ -721,7 +721,7 @@ def check_diff(data):
     parameters = {'destination': 'file',
                   'scope': 'global'}
 
-    resp = fos.monitor_get('system/config',
+    resp = fos.monitor('system/config',
                        'backup',
                        vdom=data['vdom'],
                        parameters=parameters)
@@ -776,7 +776,7 @@ def fortigate_backup(data):
     parameters = {'destination': 'file',
                   'scope': 'global'}
 
-    resp = fos.monitor_get(functions[0] + '/' + functions[1],
+    resp = fos.monitor(functions[0] + '/' + functions[1],
                        functions[2],
                        vdom=data['vdom'],
                        parameters=parameters)
@@ -912,7 +912,7 @@ def main():
         "put": fortigate_put,
         "post": fortigate_post,
         "get": fortigate_get,
-        "monitor": fortigate_monitor_get,  # deprecated
+        "monitor": _fortigate_monitor_get,  # deprecated
         "ssh": fortigate_ssh,
         "backup": fortigate_backup,
         "restore": fortigate_upload,
