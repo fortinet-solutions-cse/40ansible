@@ -554,7 +554,7 @@ def _fortigate_monitor_post(data):
 
     functions = data['config'].split()
 
-    resp = fos.exec(functions[0], functions[1] + '/' + functions[2], vdom=data['vdom'],
+    resp = fos.execute(functions[0], functions[1] + '/' + functions[2], vdom=data['vdom'],
                     data=data['config_parameters'])
     logout()
 
