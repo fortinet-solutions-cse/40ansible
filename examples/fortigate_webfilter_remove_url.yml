@@ -6,11 +6,12 @@
    vdom: "root"
   tasks:
   - name: Configure url to be filtered by fortigate
-    fortios_webfilter:
+    fortios_webfilter_urlfilter:
       host:  "{{  host }}"
       username: "{{  username}}"
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
-      webfilter_url:
-        id: "1"
+      https: False
+      webfilter_urlfilter:
         state: "absent"
+        id: 1
