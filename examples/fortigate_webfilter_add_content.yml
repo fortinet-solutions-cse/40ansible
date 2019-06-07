@@ -6,11 +6,12 @@
    vdom: "root"
   tasks:
   - name: Configure web content filtering in fortigate
-    fortios_webfilter:
+    fortios_webfilter_content:
       host:  "{{  host }}"
       username: "{{  username}}"
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
+      https: False
       webfilter_content:
         id: "1"
         name: "default"
