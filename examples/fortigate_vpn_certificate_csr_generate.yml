@@ -14,6 +14,7 @@
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
      https: True
+     ssl_verify: False
      config_parameters:
        certname: "mycert"
        keytype: "rsa"

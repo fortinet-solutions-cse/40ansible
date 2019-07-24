@@ -15,6 +15,7 @@
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
      https: False
+     ssl_verify: False
      config_parameters:
       status: "enable"
       apply-to: "admin-password ipsec-preshared-key"

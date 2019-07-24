@@ -11,6 +11,8 @@
       username: "{{ username }}"
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
+      https: False
+      ssl_verify: False
       webfilter_profile:
         state: "absent"
         name: default2

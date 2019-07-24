@@ -14,5 +14,6 @@
      password: "{{ password }}"
      vdom:  "{{ vdom }}"
      https: False
+     ssl_verify: False
      config_parameters:
       filename: "backup_config_001"

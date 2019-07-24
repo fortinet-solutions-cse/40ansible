@@ -9,6 +9,7 @@
      password: ""
      vdom:  "global"
      https: False
+     ssl_verify: False
      config_parameters:
       filename: "license_file.lic"
   - name: Upload license second fortigate
@@ -20,5 +21,6 @@
      password: ""
      vdom:  "global"
      https: False
+     ssl_verify: False
      config_parameters:
       filename: "license_file2.lic"

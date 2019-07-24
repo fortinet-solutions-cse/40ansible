@@ -12,6 +12,7 @@
       password: "{{ password }}"
       vdom:  "{{  vdom }}"
       https: False
+      ssl_verify: False
       webfilter_urlfilter:
         state: "present"
         id: "1"
