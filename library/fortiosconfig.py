@@ -484,12 +484,13 @@ def login(data):
     host = data['host']
     username = data['username']
     password = data['password']
+    ssl_verify = data['ssl_verify']
     if 'https' in data and not data['https']:
         fos.https('off')
     else:
         fos.https('on')
     fos.debug('on')
-    fos.login(host, username, password)
+    fos.login(host, username, password, verify=ssl_verify)
 
 
 def logout():
@@ -894,6 +895,7 @@ def main():
         "config": {"required": False, "choices": CONFIG_CALLS + MONITOR_CALLS, "type": "str"},
         "mkey": {"required": False, "type": "str"},
         "https": {"required": False, "type": "bool", "default": "True"},
+        "ssl_verify": {"required": False, "type": "bool", "default": "True"},
         "action": {
             "default": "set",
             "choices": ['set', 'delete', 'put',
