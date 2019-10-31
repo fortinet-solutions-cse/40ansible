@@ -775,7 +775,7 @@ def fortigate_backup(data):
     functions = data['config'].split()
 
     parameters = {'destination': 'file',
-                  'scope': 'global'}
+                  'scope': data['config_parameters']['scope']}
 
     resp = fos.monitor(functions[0] + '/' + functions[1],
                        functions[2],
@@ -794,7 +794,7 @@ def fortigate_backup(data):
             }
 
         remote_filename = '/download?mkey=' + resp['results']['DOWNLOAD_SOURCE_FILE']
-        parameters = {'scope': 'global'}
+        parameters = {'scope': data['config_parameters']['scope']}
 
         resp = fos.download(functions[0] + '/' + functions[1],
                             functions[2] + remote_filename,

@@ -3,7 +3,8 @@
    host: "192.168.122.40"
    username: "admin"
    password: ""
-   vdom: "global"
+   # If 'vdom' scope specified, the name of the vdom to backup configuration.
+   vdom: "vdomname"
   tasks:
   - name: backup system config
     fortiosconfig:
@@ -17,3 +18,5 @@
      ssl_verify: False
      config_parameters:
       filename: "backup_config_001"
+      # Specify global or vdom only backup ["global" | "vdom"].
+      scope: "global"
